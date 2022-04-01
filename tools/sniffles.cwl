@@ -71,7 +71,7 @@ inputs:
     type:
       - 'null'
       - type: enum
-        name: reverse_sequence
+        name: qc_stdev
         symbols: ["True","False"]
     inputBinding:
       prefix: "--qc-stdev"
@@ -83,7 +83,7 @@ inputs:
     type:
       - 'null'
       - type: enum
-        name: reverse_sequence
+        name: qc_strand
         symbols: ["True","False"]
     inputBinding:
       prefix: "--qc-strand"
@@ -103,7 +103,7 @@ inputs:
     type:
       - 'null'
       - type: enum
-        name: reverse_sequence
+        name: detect_large_ins
         symbols: ["True","False"]
     inputBinding:
       prefix: "--detect-large-ins"
