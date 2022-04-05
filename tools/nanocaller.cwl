@@ -95,8 +95,7 @@ inputs:
 bgzipped and tabix indexed BED file. If any other flags are used to specify a region, intersect the region with intervals in the BED file, e.g. if -chom chr1 -start 10000000 -end 20000000 flags are set, c
 all variants inside the intervals specified by the BED file that overlap with chr1:10000000-20000000. Same goes for the case when whole genome variant calling flag is set." }
   exclude_bed: { type: 'File?', secondaryFiles: [{pattern: ".tbi", required: true}], inputBinding: { prefix: "--exclude_bed", position: 1 }, doc: "Path to bgzipped and tabix indexed BED file containing in
-tervals to ignore for variant calling. BED files of centromere and telomere regions for the following genomes are included in NanoCaller: hg38, hg19, mm10 and mm39. To use these BED files use one of the f
-ollowing options: ['hg38', 'hg19', 'mm10', 'mm39']." }
+tervals to ignore for variant calling. BED files of centromere and telomere regions for the following genomes are included in NanoCaller: hg38, hg19, mm10 and mm39. To use these BED files use the exclude_bed_preset input." }
   exclude_bed_preset:
     type:
       - 'null'
@@ -137,8 +136,8 @@ eads '0.4,0.6' is recommended, for PacBio CCS anc CLR reads '0.3,0.7' and '0.3,0
 
   # Indel Calling Options
   indel_model: { type: 'string?', inputBinding: { prefix: "--indel_model", position: 1 }, doc: "NanoCaller indel model to be used" }
-  ins_t: { type: 'float?', inputBinding: { prefix: "--ins_t", position: 1 }, doc: "Insertion Threshold" }
-  del_t: { type: 'float?', inputBinding: { prefix: "--del_t", position: 1 }, doc: "Deletion Threshold" }
+  ins_threshold: { type: 'float?', inputBinding: { prefix: "--ins_threshold", position: 1 }, doc: "Insertion Threshold" }
+  del_threshold: { type: 'float?', inputBinding: { prefix: "--del_threshold", position: 1 }, doc: "Deletion Threshold" }
   win_size: { type: 'int?', inputBinding: { prefix: "--win_size", position: 1 }, doc: "Size of the sliding window in which the number of indels is counted to determine indel candidate site.  Only indels l
 onger than 2bp are counted in this window. Larger window size can increase recall, but use a maximum of 50 only" }
   small_win_size: { type: 'int?', inputBinding: { prefix: "--small_win_size", position: 1 }, doc: "Size of the sliding window in which indel frequency is determined for small indels" }
