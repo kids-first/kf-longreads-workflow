@@ -282,8 +282,9 @@ outputs:
   label: Out alignments
   doc: Output alignment file in PAF or BAM format.
   type: File?
+  secondaryFiles: [{ pattern: '.bai', required: false }]
   outputBinding:
-    glob: '{*.paf,*.bam,*.bai}'
+    glob: '{*.paf,*.bam}'
   sbg:fileTypes: PAF, BAM
 
 baseCommand:
@@ -343,3 +344,6 @@ arguments:
         return out_name + ext
     }
   shellQuote: false
+
+$namespaces:
+  sbg: https://sevenbridges.com
