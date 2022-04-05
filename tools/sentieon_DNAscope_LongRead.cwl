@@ -164,3 +164,6 @@ arguments:
             return basename.concat(".vcf.gz")
     }
   shellQuote: false
+
+$namespaces:
+  sbg: https://sevenbridges.com
