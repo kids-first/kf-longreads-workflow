@@ -10,4 +10,4 @@ sequencing outputs. Experiments from this generation of sequencing generate read
 that reach lengths of 10 kilobases.
 
 ## Workflows
-- [Oxford Nanopore Technologies Long Reads Alignment and Variant Calling Workflow]('docs/ONT_WORKFLOW_README.md')
+- [Oxford Nanopore Technologies Long Reads Alignment and Variant Calling Workflow](docs/ONT_WORKFLOW_README.md)
