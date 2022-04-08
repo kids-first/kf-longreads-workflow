@@ -11,3 +11,5 @@ that reach lengths of 10 kilobases.
 
 ## Workflows
 - [Oxford Nanopore Technologies Long Reads Alignment and Variant Calling Workflow](docs/ONT_WORKFLOW_README.md)
+- [Pacific Biosciences Long Reads Alignment and Variant Calling Workflow]('docs/PACBIO_WORKFLOW_README.md')
+

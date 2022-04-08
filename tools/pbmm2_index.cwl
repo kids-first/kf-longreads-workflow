@@ -2,6 +2,16 @@ class: CommandLineTool
 cwlVersion: v1.2
 id: pbmm2_index
 doc: |
+  Indexing is optional, but recommended if you use the same reference with the
+  same --preset multiple times.
+
+  Notes:
+  - If you use an index file, you can't override parameters -k, -w, nor -u in
+    pbmm2 align!
+  - Minimap2 parameter -H (homopolymer-compressed k-mer) is always on for SUBREAD
+    and UNROLLED presets and can be disabled with -u.
+  - You can also use existing minimap2 .mmi files in pbmm2 align.
+
   pbmm2 is a SMRT C++ wrapper for minimap2's C API. Its purpose is to support
   native PacBio in- and output, provide sets of recommended parameters, generate
   sorted output on-the-fly, and postprocess alignments. Sorted output can be used
@@ -17,7 +27,7 @@ requirements:
   dockerPull: quay.io/biocontainers/pbmm2:1.8.0--hdfd78af_0
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
-  ramMin: ${ return inputs.ram * 1000 }
+  ramMin: $(inputs.ram * 1000)
   coresMin: $(inputs.cores)
 baseCommand: [pbmm2, index]
 arguments:
@@ -73,3 +83,4 @@ inputs:
 
 outputs:
   output_mmi: { type: 'File', outputBinding: { glob: $(inputs.output_filename) }, doc: "Minimap2 reference index" }
+  log_file: { type: 'File?', outputBinding: { glob: $(inputs.log_file) }, doc: "Log output, if explicitly declared" }

@@ -17,7 +17,7 @@ requirements:
   dockerPull: quay.io/biocontainers/pbmm2:1.8.0--hdfd78af_0
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
-  ramMin: ${ return inputs.ram * 1000 }
+  ramMin: $(inputs.ram * 1000)
   coresMin: $(inputs.cores)
 baseCommand: [pbmm2, align]
 arguments:
@@ -134,3 +134,4 @@ inputs:
 
 outputs:
   output_bam: { type: 'File', secondaryFiles: [{ pattern: ".bai", required: false }, { pattern: "^.bai", required: false }], outputBinding: { glob: $(inputs.output_filename) }, doc: "pbmm2 Aligned BAM" }
+  log_file: { type: 'File?', outputBinding: { glob: $(inputs.log_file) }, doc: "Log output, if explicitly declared" }
