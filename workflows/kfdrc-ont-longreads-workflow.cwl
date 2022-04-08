@@ -18,13 +18,12 @@ inputs:
   input_unaligned_bam: { type: 'File', secondaryFiles: [{ pattern: '.bai', required: true }], doc: "" }
   indexed_reference_fasta: { type: 'File', secondaryFiles: [{ pattern: '.fai', required: true }], doc: "" }
   output_basename: { type: 'string', doc: "String to use as basename for all workflow outputs." }
-  biospecimen_name: { type: 'string?', doc: "String name of the biospecimen. Providing this value will override the SM value provided in the input_unaligned_bam." }
+  biospecimen_name: { type: 'string?', doc: "String name of the biospecimen. Providing this value will override the SM value provided in the @RG line of the input_unaligned_bam header." }
   sentieon_license: { type: 'string', doc: "License server host and port for Sentieon tools." }
 
   # Minimap2 Alignment Options
   minimap2_preset:
     type:
-    - 'null'
     - name: minimap2_preset
       type: enum
       symbols:
@@ -88,18 +87,36 @@ outputs:
   sniffles_structural_variants: { type: 'File', secondaryFiles: [{ pattern: '.tbi', required: true }], outputSource: sniffles/output_vcf, doc: "VCF.GZ file and index containing sniffles-generated SV calls." }
 
 steps:
+  samtools_head_rg:
+    run: ../tools/samtools_head.cwl
+    in:
+      input_bam: input_unaligned_bam 
+      line_filter:
+        valueFrom: "@RG"
+    out: [header_file]
+
+  update_rg_sm:
+    run: ../tools/expression_preparerg.cwl
+    in:
+      rg: samtools_head_rg/header_file
+      sample: biospecimen_name 
+    out: [rg_str]
+ 
   minimap2:
-    run: ../tools/sentieon_minimap2.cwl
+    run: ../tools/sentieon_minimap2_bam_input.cwl
     in:
       in_reads:
-        source: input_unaligned_bam
+        source: input_unaligned_bam 
         valueFrom: $([self])
       reference: indexed_reference_fasta
-      output_name:
+      input_type:
+        valueFrom: 'uBAM'
+      output_basename:
         source: output_basename
-        valueFrom: $(self).minimap2.bam
+        valueFrom: $(self).minimap2
       sentieon_license: sentieon_license
-      preset_options: minimap2_preset
+      preset_option: minimap2_preset
+      read_group_line: update_rg_sm/rg_str
       cpu_per_job: minimap2_cores
       mem_per_job: minimap2_ram
     out: [out_alignments]
