@@ -1,22 +1,13 @@
-# KF Bixu Repository Template
+# Kids First Data Resource Center Long Reads Alignment and Variant Calling Workflows
 
-Use this template to bootstrap a new KF bixu repository 
+<p align="center">
+  <img src="https://github.com/d3b-center/d3b-research-workflows/raw/master/doc/kfdrc-logo-sm.png">
+</p>
 
-### Badges
+This repository contains the Kids First Data Resource Center (KFDRC) Long Reads
+Workflows. These pipelines are designed specifically to handle third-generation
+sequencing outputs. Experiments from this generation of sequencing generate reads
+that reach lengths of 10 kilobases.
 
-Update the LICENSE badge to point to the new repo location on GitHub.
-Note that the LICENSE badge will fail to render correctly unless the repo has
-been set to **public**.
-
-Add additional badges for CI, docs, and other integrations as needed within the
-`<p>` tag next to the LICENSE.
-
-### Repo Description
-
-Update the repositories description with a short summary of the repository's
-intent.
-Include an appropriate emoji at the start of the summary.
-
-Add a handful of tags that summarize topics relating to the repository.
-If the repo has a documentation site or webpage, add it next to the repository
-description.
+## Workflows
+- [Oxford Nanopore Technologies Long Reads Alignment and Variant Calling Workflow]('docs/ONT_WORKFLOW_README.md')
