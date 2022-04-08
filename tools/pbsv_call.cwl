@@ -25,7 +25,7 @@ requirements:
   dockerPull: quay.io/biocontainers/pbsv:2.8.0--h9ee0642_0
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
-  ramMin: ${ return inputs.ram * 1000 }
+  ramMin: $(inputs.ram * 1000)
   coresMin: $(inputs.cores)
 baseCommand: [pbsv, call]
 arguments:
@@ -97,3 +97,4 @@ inputs:
 
 outputs:
   output_vcf: { type: 'File', outputBinding: { glob: $(inputs.output_filename) }, doc: "Output SV VCF" }
+  log_file: { type: 'File?', outputBinding: { glob: $(inputs.log_file) }, doc: "Log output, if explicitly declared" }
