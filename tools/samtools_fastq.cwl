@@ -47,7 +47,7 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: ShellCommandRequirement
   - class: DockerRequirement
-    dockerPull: 'dmiller15/samtools:1.15'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/samtools:1.15.1'
 baseCommand: [samtools, fastq]
 arguments:
   - position: 99

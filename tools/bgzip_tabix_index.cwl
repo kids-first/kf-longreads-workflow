@@ -5,7 +5,7 @@ doc: >-
   BGZIP and TABIX Index an input file
 requirements:
   - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/samtools:1.9'
+    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/samtools:1.15.1'
   - class: InitialWorkDirRequirement
     listing: $(inputs.input_vcf)
   - class: InlineJavascriptRequirement

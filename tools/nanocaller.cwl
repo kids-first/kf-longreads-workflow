@@ -16,10 +16,9 @@ requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
   dockerPull: genomicslab/lrtools:v0.0.4
-#  dockerPull: genomicslab/nanocaller:1.0.1 lrtools uses nanocaller 2.0.0 so we'll use that until this docker is updated
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
-  ramMin: ${ return inputs.ram * 1000 }
+  ramMin: $(inputs.ram * 1000)
   coresMin: $(inputs.cores)
 baseCommand: []
 arguments:

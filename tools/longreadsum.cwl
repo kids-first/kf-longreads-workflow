@@ -11,7 +11,6 @@ requirements:
   dockerPull: genomicslab/lrtools:v0.0.4
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
-#  ramMin: ${ return inputs.ram * 1000 }
   coresMin: $(inputs.cores)
 baseCommand: []
 arguments:

@@ -35,10 +35,10 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: dmiller15/sniffles:2.0.3
+  dockerPull: pgc-images.sbgenomics.com/d3b-bixu/sniffles:2.0.3
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
-  ramMin: ${ return inputs.ram * 1000 }
+  ramMin: $(inputs.ram * 1000)
   coresMin: $(inputs.cores)
 baseCommand: [sniffles]
 arguments:
