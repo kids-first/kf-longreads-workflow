@@ -97,4 +97,4 @@ inputs:
 
 outputs:
   output_vcf: { type: 'File', outputBinding: { glob: $(inputs.output_filename) }, doc: "Output SV VCF" }
-  log_file: { type: 'File?', outputBinding: { glob: $(inputs.log_file) }, doc: "Log output, if explicitly declared" }
+  output_log_file: { type: 'File?', outputBinding: { glob: $(inputs.log_file) }, doc: "Log output, if explicitly declared" }

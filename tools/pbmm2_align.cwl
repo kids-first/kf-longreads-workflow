@@ -134,4 +134,4 @@ inputs:
 
 outputs:
   output_bam: { type: 'File', secondaryFiles: [{ pattern: ".bai", required: false }, { pattern: "^.bai", required: false }], outputBinding: { glob: $(inputs.output_filename) }, doc: "pbmm2 Aligned BAM" }
-  log_file: { type: 'File?', outputBinding: { glob: $(inputs.log_file) }, doc: "Log output, if explicitly declared" }
+  output_log_file: { type: 'File?', outputBinding: { glob: $(inputs.log_file) }, doc: "Log output, if explicitly declared" }

@@ -83,4 +83,4 @@ inputs:
 
 outputs:
   output_mmi: { type: 'File', outputBinding: { glob: $(inputs.output_filename) }, doc: "Minimap2 reference index" }
-  log_file: { type: 'File?', outputBinding: { glob: $(inputs.log_file) }, doc: "Log output, if explicitly declared" }
+  output_log_file: { type: 'File?', outputBinding: { glob: $(inputs.log_file) }, doc: "Log output, if explicitly declared" }
