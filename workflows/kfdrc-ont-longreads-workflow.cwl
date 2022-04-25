@@ -130,7 +130,7 @@ inputs:
       \ indel frequency is determined for small indels"}
 
   # CuteSV SV Calling Options
-  cutesv_genotype: {type: 'boolean?', default: true, doc: "Enable to generate genotypes."}
+  cutesv_genotype: {type: 'boolean?', doc: "Enable to generate genotypes."}
   cutesv_max_cluster_bias_DEL: {type: 'int?', default: 100, doc: "Maximum distance\
       \ to cluster read together for deletion."}
   cutesv_diff_ratio_merging_DEL: {type: 'float?', default: 0.3, doc: "Do not merge\
