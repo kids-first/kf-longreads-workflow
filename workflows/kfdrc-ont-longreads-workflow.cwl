@@ -37,9 +37,9 @@ doc: |-
   - `sniffles_structural_variants`: BGZIP and TABIX indexed VCF containing structural variant calls made by Sniffles on the `minimap2_aligned_bam`.
 
   ## Generalized Process
-  1. Read group information (`@RG`) is harvested from the `input_unaligned_bam` header using `samtools head` and `grep`. 
+  1. Read group information (`@RG`) is harvested from the `input_unaligned_bam` header using `samtools head` and `grep`.
   1. If user provides `biospecimen_name` input, that value replaces the `SM` value pulled in the preceeding step.
-  1. Align `input_unaligned_bam` to `indexed_reference_fasta` with tohe above `@RG` information using samtools fastq, Sentieon Minimap2, and Sentieon sort. 
+  1. Align `input_unaligned_bam` to `indexed_reference_fasta` with tohe above `@RG` information using samtools fastq, Sentieon Minimap2, and Sentieon sort.
   1. Generate long reads alignment metrics from the `minimap2_aligned_bam` using LongReadSum.
   1. Generate structural variant calls from the `minimap2_aligned_bam` using CuteSV.
   1. Generate structural variant calls from the `minimap2_aligned_bam` using Sniffles.
@@ -130,10 +130,18 @@ inputs:
       \ indel frequency is determined for small indels"}
 
   # CuteSV SV Calling Options
+  cutesv_genotype: {type: 'boolean?', default: true, doc: "Enable to generate genotypes."}
   cutesv_max_cluster_bias_DEL: {type: 'int?', default: 100, doc: "Maximum distance\
       \ to cluster read together for deletion."}
   cutesv_diff_ratio_merging_DEL: {type: 'float?', default: 0.3, doc: "Do not merge\
       \ breakpoints with basepair identity more than the ratio of default for deletion."}
+
+  # Sniffles SV Calling Options
+  sniffles_tandem_repeats_input_bed: {type: 'File?', doc: "Sniffles input .bed file\
+      \ containing tandem repeat annotations for the input reference genome. Providing\
+      \ this file can improve Sniffles call accuracy."}
+  sniffles_non_germline: {type: 'boolean?', doc: "Request that Sniffles call non-germline\
+      \ SVs (rare, somatic or mosaic SVs)."}
 
   # Resource Control
   minimap2_cores: {type: 'int?', doc: "CPU Cores for minimap2 to use."}
@@ -254,6 +262,7 @@ steps:
         valueFrom: $(self).cutesv.vcf
       max_cluster_bias_DEL: cutesv_max_cluster_bias_DEL
       diff_ratio_merging_DEL: cutesv_diff_ratio_merging_DEL
+      genotype: cutesv_genotype
       cores: cutesv_cores
       ram: cutesv_ram
     out: [output_vcf]
@@ -275,6 +284,8 @@ steps:
         source: output_basename
         valueFrom: $(self).sniffles.vcf.gz
       reference_fasta: indexed_reference_fasta
+      tandem_repeats_input_bed: sniffles_tandem_repeats_input_bed
+      non_germline: sniffles_non_germline
       cores: sniffles_cores
       ram: sniffles_ram
     out: [output_vcf, output_snf]
