@@ -100,7 +100,24 @@ inputs:
       Select one of the preset options prepared by the tool authors. Selecting one of
       these options will apply multiple options at the same time.
 
-  # NanoCaller WGS Options
+  # NanoCaller Region Arguments
+  nanocaller_interval_length: { type: 'int?', doc: "Length of split intervals. Lower the value to make smaller intervals. Increase the value to make larger intervals." }
+  nanocaller_chrom: { type: 'string?', doc: "Chromosome to which calling will be restricted. Required for WXS. If running in WGS mode multiple chromosomes can be provided as a whitespace separated list (e.g. 'chr1 chr11 chr14')." }
+  nanocaller_include_bed: { type: 'File?', secondaryFiles: [{pattern: ".tbi", required: true}], doc: "Only call variants inside the intervals specified in the bgzipped and tabix indexed BED file. If any other flags are used to specify a region, intersect the region with intervals in the BED file, e.g. if -chom chr1 -start 10000000 -end 20000000 flags are set, c all variants inside the intervals specified by the BED file that overlap with chr1:10000000-20000000. Same goes for the case when whole genome variant calling flag is set." }
+  nanocaller_wgs_contigs_type:
+    type:
+      - 'null'
+      - type: enum
+        name: nanocaller_wgs_contigs_type
+        symbols: ["with_chr", "without_chr", "all"]
+    doc: |
+      Options are "with_chr", "without_chr" and "all", "with_chr"
+      option will assume human genome and run NanoCaller on chr1-22, "without_chr"
+      will run on chromosomes 1-22 if the BAM and reference genome files use
+      chromosome names without "chr". "all" option will run NanoCaller on each contig
+      present in reference genome FASTA file.
+
+  # Nanocaller Calling Options
   nanocaller_preset:
     type:
       type: enum
@@ -146,10 +163,8 @@ inputs:
   # Resource Control
   minimap2_cores: {type: 'int?', doc: "CPU Cores for minimap2 to use."}
   minimap2_ram: {type: 'int?', doc: "RAM (in GB) for minimap2 to use."}
-  nanocaller_cores: {type: 'int?', default: 32, doc: "CPU Cores for nanocaller to\
-      \ use."}
-  nanocaller_ram: {type: 'int?', default: 32, doc: "RAM (in GB) for nanocaller to\
-      \ use."}
+  nanocaller_cores: {type: 'int?', doc: "CPU Cores for nanocaller to use."}
+  nanocaller_ram: {type: 'int?', doc: "RAM (in GB) for nanocaller to use."}
   longreadsum_cores: {type: 'int?', doc: "CPU Cores for longreadsum to use."}
   cutesv_cores: {type: 'int?', doc: "CPU Cores for cutesv to use."}
   cutesv_ram: {type: 'int?', doc: "RAM (in GB) for cutesv to use."}
@@ -160,7 +175,7 @@ outputs:
   minimap2_aligned_bam: {type: 'File', secondaryFiles: [{pattern: '.bai', required: true}],
     outputSource: minimap2/out_alignments, doc: "Aligned BAM file from Minimap2."}
   nanocaller_small_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi', required: true}],
-    outputSource: nanocaller_wgs/final_vcf, doc: "VCF.GZ file and index containing\
+    outputSource: nanocaller_merge_final/merged_vcf, doc: "VCF.GZ file and index containing\
       \ NanoCaller-gerated small variant calls."}
   longreadsum_bam_metrics: {type: 'File', outputSource: tar_longreadsum_dir/output,
     doc: "TAR.GZ file containing longreadsum-generated metrics."}
@@ -186,6 +201,7 @@ steps:
       rg: samtools_head_rg/header_file
       sample: biospecimen_name
     out: [rg_str]
+
   minimap2:
     run: ../tools/sentieon_minimap2.cwl
     in:
@@ -205,16 +221,36 @@ steps:
       mem_per_job: minimap2_ram
     out: [out_alignments]
 
-  nanocaller_wgs:
+  nanocaller_scatter:
+    run: ../tools/nanocaller_scatter.cwl
+    in:
+      input_bam: minimap2/out_alignments
+      reference_fai:
+        source: indexed_reference_fasta
+        valueFrom: $(self.secondaryFiles[0])
+      interval_length: nanocaller_interval_length
+      chrom: nanocaller_chrom
+      include_bed: nanocaller_include_bed
+      wgs_contigs_type: nanocaller_wgs_contigs_type
+    out: [scattered_interval_beds]
+
+  nanocaller:
     run: ../tools/nanocaller.cwl
+    scatter: [include_bed]
+    hints:
+    - class: sbg:AWSInstanceType
+      value: c5.12xlarge
     in:
       wgs_mode:
-        valueFrom: $(1 == 1)
+        valueFrom: $(1 == 0)
       input_bam: minimap2/out_alignments
       indexed_reference_fasta: indexed_reference_fasta
+      chrom:
+        valueFrom: $(inputs.include_bed.basename.split('_').slice(0,-4).join('_'))
       output_basename:
         source: output_basename
         valueFrom: $(self).nanocaller
+      include_bed: nanocaller_scatter/scattered_interval_beds
       preset: nanocaller_preset
       snp_model: nanocaller_snp_model
       neighbor_threshold: nanocaller_neighbor_threshold
@@ -227,6 +263,42 @@ steps:
       ram: nanocaller_ram
     out: [snps_unphased_vcf, snps_phased_vcf, indels_vcf, final_vcf, fail_logs, fail_cmds,
       logs]
+
+  nanocaller_merge_snps_unphased:
+    run: ../tools/nanocaller_merge.cwl
+    in:
+      input_vcfs: nanocaller/snps_unphased_vcf
+      output_basename:
+        source: output_basename
+        valueFrom: $(self).nanocaller.snps
+    out: [merged_vcf]
+
+  nanocaller_merge_snps_phased:
+    run: ../tools/nanocaller_merge.cwl
+    in:
+      input_vcfs: nanocaller/snps_phased_vcf
+      output_basename:
+        source: output_basename
+        valueFrom: $(self).nanocaller.snps.phased
+    out: [merged_vcf]
+
+  nanocaller_merge_indels:
+    run: ../tools/nanocaller_merge.cwl
+    in:
+      input_vcfs: nanocaller/indels_vcf
+      output_basename:
+        source: output_basename
+        valueFrom: $(self).nanocaller.indels
+    out: [merged_vcf]
+
+  nanocaller_merge_final:
+    run: ../tools/nanocaller_merge.cwl
+    in:
+      input_vcfs: nanocaller/final_vcf
+      output_basename:
+        source: output_basename
+        valueFrom: $(self).nanocaller.final
+    out: [merged_vcf]
 
   longreadsum:
     run: ../tools/longreadsum.cwl

@@ -69,4 +69,4 @@ all variants inside the intervals specified by the BED file that overlap with ch
   ram: { type: 'int?', default: 1, doc: "RAM (in GB) to use" }
   
 outputs:
-  scattered_interval_beds: { type: 'File[]', outputBinding: { glob: "$(inputs.output_dir ? inputs.output_dir+'/*.bed' : '*.bed')" }, doc: "Scattered interval beds." }
+  scattered_interval_beds: { type: 'File[]', secondaryFiles: [{pattern: '.tbi', required: true}],  outputBinding: { glob: "$(inputs.output_dir ? inputs.output_dir+'/*.bed.gz' : '*.bed.gz')" }, doc: "Scattered interval beds." }
