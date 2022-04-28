@@ -91,8 +91,7 @@ inputs:
 
   # Variant Calling Regions Options
   include_bed: { type: 'File?', secondaryFiles: [{pattern: ".tbi", required: true}], inputBinding: { prefix: "--include_bed", position: 1 }, doc: "Only call variants inside the intervals specified in the
-bgzipped and tabix indexed BED file. If any other flags are used to specify a region, intersect the region with intervals in the BED file, e.g. if -chom chr1 -start 10000000 -end 20000000 flags are set, c
-all variants inside the intervals specified by the BED file that overlap with chr1:10000000-20000000. Same goes for the case when whole genome variant calling flag is set." }
+bgzipped and tabix indexed BED file. If any other flags are used to specify a region, intersect the region with intervals in the BED file, e.g. if -chom chr1 -start 10000000 -end 20000000 flags are set, call variants inside the intervals specified by the BED file that overlap with chr1:10000000-20000000. Same goes for the case when whole genome variant calling flag is set." }
   exclude_bed: { type: 'File?', secondaryFiles: [{pattern: ".tbi", required: true}], inputBinding: { prefix: "--exclude_bed", position: 1 }, doc: "Path to bgzipped and tabix indexed BED file containing in
 tervals to ignore for variant calling. BED files of centromere and telomere regions for the following genomes are included in NanoCaller: hg38, hg19, mm10 and mm39. To use these BED files use the exclude_bed_preset input." }
   exclude_bed_preset:
@@ -126,7 +125,7 @@ tervals to ignore for variant calling. BED files of centromere and telomere regi
       present in reference genome FASTA file.
 
   # SNP Calling Options
-  snp_model: { type: 'string?', inputBinding: { prefix: "--snp_model", position: 1 }, doc: "NanoCaller SNP model to be used" }
+  snp_model: { type: 'string?', inputBinding: { prefix: "--snp_model", position: 1 }, doc: "NanoCaller SNP model to be used (e.g. ONT-HG002, CCS-HG002, CLR-HG002)" }
   min_allele_freq: { type: 'float?', inputBinding: { prefix: "--min_allele_freq", position: 1 }, doc: "minimum alternative allele frequency" }
   min_nbr_sites: { type: 'int?', inputBinding: { prefix: "--min_nbr_sites", position: 1 }, doc: "minimum number of nbr sites" }
   neighbor_threshold: { type: 'string?', inputBinding: { prefix: "--neighbor_threshold", position: 1 }, doc: "SNP neighboring site thresholds with lower and upper bounds seperated by comma, for Nanopore r
@@ -134,7 +133,7 @@ eads '0.4,0.6' is recommended, for PacBio CCS anc CLR reads '0.3,0.7' and '0.3,0
   supplementary: { type: 'boolean?', inputBinding: { prefix: "--supplementary True", position: 1, shellQuote: false }, doc: "Use supplementary reads" }
 
   # Indel Calling Options
-  indel_model: { type: 'string?', inputBinding: { prefix: "--indel_model", position: 1 }, doc: "NanoCaller indel model to be used" }
+  indel_model: { type: 'string?', inputBinding: { prefix: "--indel_model", position: 1 }, doc: "NanoCaller indel model to be used (e.g. ONT-HG002, CCS-HG002)" }
   ins_threshold: { type: 'float?', inputBinding: { prefix: "--ins_threshold", position: 1 }, doc: "Insertion Threshold" }
   del_threshold: { type: 'float?', inputBinding: { prefix: "--del_threshold", position: 1 }, doc: "Deletion Threshold" }
   win_size: { type: 'int?', inputBinding: { prefix: "--win_size", position: 1 }, doc: "Size of the sliding window in which the number of indels is counted to determine indel candidate site.  Only indels l
