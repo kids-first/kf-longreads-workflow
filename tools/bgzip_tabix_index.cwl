@@ -25,7 +25,7 @@ arguments:
       && tabix -p vcf $(inputs.input_vcf.basename).gz
 
 inputs:
-  input_vcf: { type: 'File', doc: "Position sorted and compressed by bgzip input file"}
+  input_vcf: { type: 'File', doc: "Position sorted input vcf file"}
   cores: { type: 'int?', default: 16 }
 
 outputs:

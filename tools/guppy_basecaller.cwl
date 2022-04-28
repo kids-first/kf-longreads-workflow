@@ -3,12 +3,12 @@ cwlVersion: v1.2
 id: guppy_basecaller
 doc: |
   Guppy is a data processing toolkit that contains the Oxford Nanopore
-  Technologies' production basecalling algorithms and several bioinformatic post-
+  Technologies production basecalling algorithms and several bioinformatic post-
   processing features. It is run from the command line in Windows, Mac OS, and on
   multiple Linux platforms. Guppy is also integrated with our sequencing
   instrument software, MinKNOW, and a subset of Guppy features are available via
   the MinKNOW UI. A selection of configuration files allows basecalling of DNA
-  and RNA libraries made with Oxford Nanopore Technologies’ current sequencing
+  and RNA libraries made with Oxford Nanopore Technologies current sequencing
   kits, in a range of flow cells.
 
   The Guppy software contains many configurable parameters that can be used to
@@ -40,8 +40,7 @@ arguments:
 
 inputs:
   # Required Params
-  input_path: { type: 'Directory', loadListing: 'deep_listing',  inputBinding: { prefix: "--input_path", position: 1 }, doc: "Full or relative path to the directory where the raw read files are located. T
-he folder can be absolute (e.g. /data/my_reads) or a relative path to the current working directory (e.g. ../my_reads)" }
+  input_path: { type: 'Directory', loadListing: 'deep_listing',  inputBinding: { prefix: "--input_path", position: 1 }, doc: "Full or relative path to the directory where the raw read files are located. The folder can be absolute (e.g. /data/my_reads) or a relative path to the current working directory (e.g. ../my_reads)" }
   save_path: { type: 'string?', default: "guppy_outputs", inputBinding: { prefix: "--save_path", position: 1 }, doc: "Full or relative path to the directory where the basecall results will be saved. The f
 older can be absolute or a relative path to the current working directory. This folder will be created if it does not exist using the path you provide. (e.g. if it is a relative path, it will be relative
 to the current working directory)" }
