@@ -19,7 +19,7 @@ requirements:
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)
-  coresMin: $(inputs.cores)
+  coresMin: $(inputs.cores + 1)
 baseCommand: []
 arguments:
 - position: 0

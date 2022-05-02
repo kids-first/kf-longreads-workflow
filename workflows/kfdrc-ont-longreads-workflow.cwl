@@ -163,8 +163,8 @@ inputs:
   # Resource Control
   minimap2_cores: {type: 'int?', doc: "CPU Cores for minimap2 to use."}
   minimap2_ram: {type: 'int?', doc: "RAM (in GB) for minimap2 to use."}
-  nanocaller_cores: {type: 'int?', doc: "CPU Cores for nanocaller to use."}
-  nanocaller_ram: {type: 'int?', doc: "RAM (in GB) for nanocaller to use."}
+  nanocaller_cores: {type: 'int?', default: 5, doc: "CPU Cores for nanocaller to use."}
+  nanocaller_ram: {type: 'int?', default: 5, doc: "RAM (in GB) for nanocaller to use."}
   longreadsum_cores: {type: 'int?', doc: "CPU Cores for longreadsum to use."}
   cutesv_cores: {type: 'int?', doc: "CPU Cores for cutesv to use."}
   cutesv_ram: {type: 'int?', doc: "RAM (in GB) for cutesv to use."}
