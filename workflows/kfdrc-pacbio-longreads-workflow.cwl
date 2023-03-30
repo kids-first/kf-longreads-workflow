@@ -70,8 +70,8 @@ inputs:
       \ outputs."}
   biospecimen_name: {type: 'string?', doc: "String name of the biospecimen. Providing\
       \ this value will override the SM value provided in the input_unaligned_bam."}
-  sentieon_license: {type: 'string', doc: "License server host and port for Sentieon\
-      \ tools."}
+  sentieon_license: {type: 'string?', doc: "License server host and port for Sentieon\
+      \ tools.", default: "10.5.64.221:8990"}
   pbmm2_preset:
     type:
     - 'null'
@@ -98,6 +98,8 @@ inputs:
   pbsv_ram: {type: 'int?', doc: "RAM (in GB) for pbsv to use."}
   sniffles_cores: {type: 'int?', doc: "CPU Cores for sniffles to use."}
   sniffles_ram: {type: 'int?', doc: "RAM (in GB) for sniffles to use."}
+  longreadsv_cores: {type: 'int?', doc: "CPU Cores for Sentieon LongReadSV to use." }
+  longreadsv_ram: {type: 'int?', doc: "RAM (in GB) for Sentieon LongReadSV to use." }
 
 outputs:
   pbmm2_aligned_bam: {type: 'File', secondaryFiles: [{pattern: '.bai', required: true}],
@@ -113,6 +115,7 @@ outputs:
   sniffles_structural_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi',
         required: true}], outputSource: sniffles/output_vcf, doc: "VCF.GZ file and\
       \ index containing sniffles-generated SV calls."}
+  longreadsv_structural_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi', required: true}], outputSource: sentieon_longreadsv/output_vcf, doc: "VCF.GZ file and index containing Sentieon LongReadSV-generated SV calls."}
 
 steps:
   pbmm2_align:
@@ -209,6 +212,21 @@ steps:
       cores: sniffles_cores
       ram: sniffles_ram
     out: [output_vcf, output_snf]
+
+  sentieon_longreadsv:
+    run: ../tools/sentieon_LongReadSV.cwl
+    in:
+      sentieon_license: sentieon_license
+      reference: indexed_reference_fasta
+      input_bam: pbmm2_align/output_bam
+      platform:
+        valueFrom: "PacBioHiFi"
+      output_file_name:
+        source: output_basename
+        valueFrom: $(self).longreadsv.vcf.gz
+      cpu: longreadsv_cores
+      ram: longreadsv_ram
+    out: [output_vcf]
 
 $namespaces:
   sbg: https://sevenbridges.com
