@@ -24,7 +24,7 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: quay.io/biocontainers/pbmm2:1.8.0--hdfd78af_0
+  dockerPull: quay.io/biocontainers/pbmm2:1.10.0--h9ee0642_0
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)

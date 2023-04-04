@@ -101,21 +101,10 @@ inputs:
       these options will apply multiple options at the same time.
 
   # NanoCaller Region Arguments
+  nanocaller_primary_contigs_only: { type: 'boolean?', doc: "Only analyze the primary contigs. Recommended for WGS." }
+  nanocaller_regions: { type: 'string[]?', doc: "A space/whitespace separated list of regions specified as 'CONTIG_NAME' or 'CONTIG_NAME:START-END'. If you want to use 'CONTIG_NAME:START-END' format then specify both start and end coordinates. For example: chr3 chr6:28000000-35000000 chr22." }
+  nanocaller_bed: { type: 'File?', doc: "A BED file specifying regions for variant calling." }
   nanocaller_interval_length: { type: 'int?', doc: "Length of split intervals. Lower the value to make smaller intervals. Increase the value to make larger intervals." }
-  nanocaller_chrom: { type: 'string?', doc: "Chromosome to which calling will be restricted. Required for WXS. If running in WGS mode multiple chromosomes can be provided as a whitespace separated list (e.g. 'chr1 chr11 chr14')." }
-  nanocaller_include_bed: { type: 'File?', secondaryFiles: [{pattern: ".tbi", required: true}], doc: "Only call variants inside the intervals specified in the bgzipped and tabix indexed BED file. If any other flags are used to specify a region, intersect the region with intervals in the BED file, e.g. if -chom chr1 -start 10000000 -end 20000000 flags are set, c all variants inside the intervals specified by the BED file that overlap with chr1:10000000-20000000. Same goes for the case when whole genome variant calling flag is set." }
-  nanocaller_wgs_contigs_type:
-    type:
-      - 'null'
-      - type: enum
-        name: nanocaller_wgs_contigs_type
-        symbols: ["with_chr", "without_chr", "all"]
-    doc: |
-      Options are "with_chr", "without_chr" and "all", "with_chr"
-      option will assume human genome and run NanoCaller on chr1-22, "without_chr"
-      will run on chromosomes 1-22 if the BAM and reference genome files use
-      chromosome names without "chr". "all" option will run NanoCaller on each contig
-      present in reference genome FASTA file.
 
   # Nanocaller Calling Options
   nanocaller_preset:
@@ -225,16 +214,13 @@ steps:
     out: [out_alignments]
 
   nanocaller_scatter:
-    run: ../tools/nanocaller_scatter.cwl
+    run: ../tools/nanocaller_scatter2.cwl
     in:
       input_bam: minimap2/out_alignments
-      reference_fai:
-        source: indexed_reference_fasta
-        valueFrom: $(self.secondaryFiles[0])
+      primary_contigs_only: nanocaller_primary_contigs_only
+      regions: nanocaller_regions
+      bed: nanocaller_bed
       interval_length: nanocaller_interval_length
-      chrom: nanocaller_chrom
-      include_bed: nanocaller_include_bed
-      wgs_contigs_type: nanocaller_wgs_contigs_type
     out: [scattered_interval_beds]
 
   nanocaller:
@@ -244,12 +230,8 @@ steps:
     - class: sbg:AWSInstanceType
       value: c5.12xlarge
     in:
-      wgs_mode:
-        valueFrom: $(1 == 0)
       input_bam: minimap2/out_alignments
       indexed_reference_fasta: indexed_reference_fasta
-      chrom:
-        valueFrom: $(inputs.include_bed.basename.split('_').slice(0,-4).join('_'))
       output_basename:
         source: output_basename
         valueFrom: $(self).nanocaller

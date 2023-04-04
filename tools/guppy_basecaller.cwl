@@ -24,7 +24,7 @@ requirements:
 - class: InlineJavascriptRequirement
 - class: LoadListingRequirement
 - class: DockerRequirement
-  dockerPull: genomicpariscentre/guppy-gpu:6.0.1
+  dockerPull: genomicpariscentre/guppy-gpu:6.4.6
 - class: ResourceRequirement
   ramMin: |
     $((inputs.num_callers * inputs.cpu_threads_per_caller + 4) * 1000)
