@@ -22,7 +22,7 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: quay.io/biocontainers/pbsv:2.8.0--h9ee0642_0
+  dockerPull: quay.io/biocontainers/pbsv:2.9.0--h9ee0642_0
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)

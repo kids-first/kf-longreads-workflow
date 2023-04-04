@@ -8,7 +8,7 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: genomicslab/lrtools:v0.0.4
+  dockerPull: pgc-images.sbgenomics.com/danmiller/longreadsum:1.0.1
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   coresMin: $(inputs.cores)

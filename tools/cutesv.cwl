@@ -25,7 +25,7 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: pgc-images.sbgenomics.com/d3b-bixu/cutesv:1.0.13
+  dockerPull: pgc-images.sbgenomics.com/danmiller/cutesv:2.0.2
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)
