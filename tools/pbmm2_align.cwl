@@ -18,7 +18,7 @@ requirements:
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)
-  coresMin: $(inputs.cores)
+  coresMin: $(inputs.cpu)
 baseCommand: [pbmm2, align]
 arguments:
 - position: 99
@@ -117,8 +117,8 @@ inputs:
   collapse_homopolymers: { type: 'boolean?', inputBinding: { prefix: "--collapse-homopolymers", position: 1 }, doc: "Collapse homopolymers in reads and reference." }
 
   # Control
-  cores: { type: 'int?', default: 16, inputBinding: { prefix: "--num-threads", position: 1 }, doc: "Number of threads to use" }
-  ram: { type: 'int?', default: 32, doc: "RAM (in GB) to use" }
+  cpu: { type: 'int?', default: 36, inputBinding: { prefix: "--num-threads", position: 1 }, doc: "Number of threads to use" }
+  ram: { type: 'int?', default: 36, doc: "RAM (in GB) to use" }
   log_level:
     type:
       - 'null'

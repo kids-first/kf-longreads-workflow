@@ -175,11 +175,11 @@ inputs:
   soft_clipping: { type: 'boolean?', inputBinding: { position: 112, prefix: "-Y" }, doc: "In SAM output, use soft clipping for supplementary alignments." }
   minibatch_size: { type: 'string?', inputBinding: { position: 112, prefix: "-K" }, doc: "Number of bases loaded into memory to process in a mini-batch [500M]." }
   additional_inputs: { type: 'string?', inputBinding: { position: 197, shellQuote: false }, doc: "Optional input for additional arguments." }
-  cpu_per_job: { type: 'int?', default: 32, doc: "CPU per job" }
-  mem_per_job: { type: 'int?', default: 32, doc: "Memory per job[GB]" }
+  cpu_per_job: { type: 'int?', default: 36, doc: "CPU per job" }
+  mem_per_job: { type: 'int?', default: 36, doc: "Memory per job[GB]" }
 
 outputs:
-  out_alignments: { type: 'File?', secondaryFiles: [{ pattern: '.bai', required: false }], outputBinding: { glob: '{*.paf,*.bam}' }, doc: "Output alignment file in PAF or BAM format." }
+  out_alignments: { type: 'File', secondaryFiles: [{ pattern: '.bai', required: false }], outputBinding: { glob: '{*.paf,*.bam}' }, doc: "Output alignment file in PAF or BAM format." }
 
 $namespaces:
   sbg: https://sevenbridges.com

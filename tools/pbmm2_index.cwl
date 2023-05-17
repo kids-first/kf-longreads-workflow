@@ -28,7 +28,7 @@ requirements:
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)
-  coresMin: $(inputs.cores)
+  coresMin: $(inputs.cpu)
 baseCommand: [pbmm2, index]
 arguments:
 - position: 99
@@ -66,7 +66,7 @@ inputs:
   align_disable_hpc: { type: 'boolean?', inputBinding: { prefix: "--no-kmer-compression", position: 1 }, doc: "Disable homopolymer-compressed k-mer (compression is active for SUBREAD & UNROLLED presets)." }
 
   # Control
-  cores: { type: 'int?', default: 16, inputBinding: { prefix: "--num-threads", position: 1 }, doc: "Number of threads to use" }
+  cpu: { type: 'int?', default: 16, inputBinding: { prefix: "--num-threads", position: 1 }, doc: "Number of threads to use" }
   ram: { type: 'int?', default: 32, doc: "RAM (in GB) to use" }
   log_level:
     type:

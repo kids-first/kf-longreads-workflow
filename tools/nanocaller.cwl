@@ -15,11 +15,11 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: genomicslab/nanocaller:3.0.1
+  dockerPull: genomicslab/nanocaller:3.2.0
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)
-  coresMin: $(inputs.cores + 1)
+  coresMin: $(inputs.cpu)
 baseCommand: []
 arguments:
 - position: 0
@@ -34,7 +34,7 @@ arguments:
     1>&2
 
 inputs:
-  input_bam: { type: 'File', secondaryFiles: [{ pattern: ".bai", required: true }],  inputBinding: { prefix: "--bam", position: 1 }, doc: "Bam file, should be phased if 'indel' mode is selected" }
+  input_bam: { type: 'File', secondaryFiles: [{ pattern: ".bai", required: false }, { pattern: ".csi", required: false }],  inputBinding: { prefix: "--bam", position: 1 }, doc: "Bam file, should be phased if 'indel' mode is selected" }
   indexed_reference_fasta: { type: 'File', inputBinding: { prefix: "--ref", position: 1 }, secondaryFiles: [{pattern: ".fai", required: true}], doc: "Reference genome file with .fai index" }
   preset:
     type:
@@ -82,10 +82,10 @@ inputs:
       if you have several ultra-long ONT reads up to 100kbp long, and
       'ul_ont_extreme' if you have several ultra-long ONT reads up to 300kbp long.
       For PacBio CCS (HiFi) and CLR reads, use 'pacbio'.
-  cores: { type: 'int?', default: 1, inputBinding: { prefix: "--cpu", position: 1 }, doc: "Number of CPUs to use." }
-  ram: { type: 'int?', default: 2, doc: "GC of RAM to use" }
   mincov: { type: 'int?', inputBinding: { prefix: "--mincov", position: 1 }, doc: "Minimum coverage to call a variant." }
   maxcov: { type: 'int?', inputBinding: { prefix: "--maxcov", position: 1 }, doc: "Maximum coverage of reads to use. If sequencing depth at a candidate site exceeds maxcov then reads are downsampled." }
+  haploid_genome: { type: 'boolean?', inputBinding: { position: 1, prefix: "--haploid_genome" }, doc: "Assume that all chromosomes in the genome are haploid." }
+  haploid_X: { type: 'boolean?', inputBinding: { position: 1, prefix: "--haploid_X" }, doc: "Assume that chrX is haploid. chrY and chrM are assumed to be haploid by default." }
 
   # Variant Calling Regions Options
   regions: { type: 'string[]?', inputBinding: { position: 1, prefix: "--regions" }, doc: "A space/whitespace separated list of regions specified as 'CONTIG_NAME' or 'CONTIG_NAME:START-END'. If you want to use 'CONTIG_NAME:START-END' format then specify both start and end coordinates. For example: chr3 chr6:28000000-35000000 chr22. (default: None)" }
@@ -135,19 +135,19 @@ inputs:
   impute_indel_phase: { type: 'boolean?', inputBinding: { prefix: "--impute_indel_phase", position: 1, shellQuote: false }, doc: "Infer read phase by rudimentary allele clustering if the no or insufficient phasing information is available, can be useful for datasets without SNPs or regions with poor phasing quality." }
 
   # Output Options
-  output_basename: { type: 'string?', inputBinding: { prefix: "--prefix",  position: 1 }, doc: "String to use as basename for output files" }
+  output_basename: { type: 'string?', default: "variant_calls", inputBinding: { prefix: "--prefix",  position: 1 }, doc: "String to use as basename for output files" }
   sample_name: { type: 'string?', inputBinding: { prefix: "--sample",  position: 1 }, doc: "VCF file sample name" }
 
   # Phasing Options
   phase: { type: 'boolean?', inputBinding: { position: 1, prefix: "--phase" }, doc: "Phase SNPs and BAM files if snps mode is selected. (default: False)" }
   enable_whatshap: { type: 'boolean?', inputBinding: { prefix: "--enable_whatshap", position: 1, shellQuote: false }, doc: "Allow WhatsHap to change SNP genotypes when phasing using --distrust-genotypes and --include-homozygous flags (this is not the same as regenotyping), considerably increasing the time needed for phasing.  It has a negligible effect on SNP calling accuracy for Nanopore reads, but may make a small improvement for PacBio reads. By default WhatsHap will only phase SNP calls produced by NanoCaller, but not change their genotypes." }
 
+  cpu: { type: 'int?', default: 8, inputBinding: { prefix: "--cpu", position: 1 }, doc: "Number of CPUs to use." }
+  ram: { type: 'int?', default: 16, doc: "GC of RAM to use" }
 outputs:
   snps_unphased_vcf: { type: 'File?', secondaryFiles: [{ pattern: ".tbi", required: true}], outputBinding: { glob: "*snps.vcf.gz" }, doc: "Contains unphased SNP calls made by NanoCaller using a deep learning model. NanoCaller modes that produce this file are: snps_unphased, snps and both." }
   snps_phased_vcf: { type: 'File?', secondaryFiles: [{ pattern: ".tbi", required: true}], outputBinding: { glob: "*snps.phased.vcf.gz" }, doc: "Contains SNP calls from PREFIX.snps.vcf.gz that are phase with WhatsHap. By default they have the same genotype as in the PREFIX.snps.vcf.gz file, unless --enable_whatshap flag is set which can allow WhatsHap to change genotypes. NanoCaller modes that produce this
  file are: snps and both." }
   indels_vcf: { type: 'File?', secondaryFiles: [{ pattern: ".tbi", required: true}], outputBinding: { glob: "*.indels.vcf.gz"}, doc: "Contains indel calls made by NanoCaller using multiple sequence alignment. Some of these calls might be indels combined with nearby substitutions or multi-nucleotide substitutions. NanoCaller modes that produce this file are: indels and both." }
-  final_vcf: { type: 'File?', secondaryFiles: [{ pattern: ".tbi", required: true}], outputBinding: { glob: "*.final.vcf.gz" }, doc: "Contains SNP calls from PREFIX.snps.phased.vcf.gz and indel calls from PREFIX.indels.vcf.gz. NanoCaller mode that produce this file is: both." }
-  fail_logs: { type: 'File?', outputBinding: { glob: "failed_jobs_combined_logs" } }
-  fail_cmds: { type: 'File?', outputBinding: { glob: "failed_jobs_commands" } }
-  logs: { type: 'Directory?', outputBinding: { glob: "logs" } }
+  final_vcf: { type: 'File?', secondaryFiles: [{ pattern: ".tbi", required: true}], outputBinding: { glob: "$(inputs.output_basename).vcf.gz" }, doc: "Contains SNP calls from PREFIX.snps.phased.vcf.gz and indel calls from PREFIX.indels.vcf.gz. NanoCaller mode that produce this file is: all." }
+  phased_bams: { type: 'File[]?', secondaryFiles: [{ pattern: ".csi", required: true}], outputBinding: { glob: "intermediate_phase_files/*.phased.bam" }, doc: "Phased bam files made when setting the --phase flag or running in mode: all" }

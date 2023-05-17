@@ -35,11 +35,11 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: pgc-images.sbgenomics.com/danmiller/sniffles:2.0.7
+  dockerPull: pgc-images.sbgenomics.com/d3b-bixu/sniffles:2.0.7
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)
-  coresMin: $(inputs.cores)
+  coresMin: $(inputs.cpu)
 baseCommand: [sniffles]
 arguments:
 - position: 99
@@ -57,8 +57,8 @@ inputs:
   tandem_repeats_input_bed: { type: 'File?', inputBinding: { prefix: "--tandem-repeats", position: 1 }, doc: "Input .bed file containing tandem repeat annotations for the reference genome. (default: None)" }
   non_germline: { type: 'boolean?', inputBinding: { prefix: "--non-germline", position: 1 }, doc: "Call non-germline SVs (rare, somatic or mosaic SVs)" }
   phase: { type: 'boolean?', inputBinding: { prefix: "--phase", position: 1 }, doc: "Determine phase for SV calls (requires the input alignments to be phased)" }
-  cores: { type: 'int?', default: 4, inputBinding: { prefix: "--threads", position: 1 }, doc: "Number of threads to use" }
-  ram: { type: 'int?', default: 8, doc: "RAM (in GB) to use" }
+  cpu: { type: 'int?', default: 4, inputBinding: { prefix: "--threads", position: 1 }, doc: "Number of threads to use" }
+  ram: { type: 'int?', default: 16, doc: "RAM (in GB) to use" }
 
   # SV Filtering Arguments
   minsupport: { type: 'string?', inputBinding: { prefix: "--minsupport", position: 1 }, doc: "Minimum number of supporting reads for a SV to be reported (default: automatically choose based on coverage)" }

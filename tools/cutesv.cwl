@@ -25,11 +25,11 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: pgc-images.sbgenomics.com/danmiller/cutesv:2.0.2
+  dockerPull: pgc-images.sbgenomics.com/d3b-bixu/cutesv:2.0.3
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)
-  coresMin: $(inputs.cores)
+  coresMin: $(inputs.cpu)
 baseCommand: [cuteSV]
 arguments:
 - position: 99
@@ -46,8 +46,8 @@ inputs:
   workdir: { type: 'string?', default: '.', inputBinding: { position: 83 }, doc: "Work-directory for distributed jobs" }
 
   # Optional Arguments
-  cores: { type: 'int?', default: 16, inputBinding: { prefix: "--threads", position: 1 }, doc: "Number of threads to use" }
-  ram: { type: 'int?', default: 32, doc: "RAM (in GB) to use" }
+  cpu: { type: 'int?', default: 4, inputBinding: { prefix: "--threads", position: 1 }, doc: "Number of threads to use" }
+  ram: { type: 'int?', default: 16, doc: "RAM (in GB) to use" }
   batches: { type: 'int?', inputBinding: { prefix: "--batches", position: 1 }, doc: "Batch of genome segmentation interval." }
   sample: { type: 'string?', inputBinding: { prefix: "--sample", position: 1 }, doc: "Sample name/id" }
   retain_workdir: { type: 'boolean?', inputBinding: { prefix: "--retain_work_dir", position: 1 }, doc: "Enable to retain temporary folder and files." }
@@ -59,6 +59,7 @@ inputs:
   min_read_len: { type: 'int?', inputBinding: { prefix: "--min_read_len", position: 1 }, doc: "Ignores reads that only report alignments with not longer than bp.[500]" }
   merge_del_threshold: { type: 'int?', inputBinding: { prefix: "--merge_del_threshold", position: 1 }, doc: "Maximum distance of deletion signals to be merged. In our paper, I used -md 500 to process HG002 real human sample data.[0]" }
   merge_ins_threshold: { type: 'int?', inputBinding: { prefix: "--merge_ins_threshold", position: 1 }, doc: "Maximum distance of insertion signals to be merged. In our paper, I used -mi 500 to process HG002 real human sample data.[100]" }
+  include_bed: { type: 'File?', inputBinding: { position: 1, prefix: "-include_bed" }, doc: "Optional given bed file. Only detect SVs in regions in the BED file." }
 
   # Generation of SV clusters Arguments
   min_support: { type: 'int?', inputBinding: { prefix: "--min_support", position: 1 }, doc: "Minimum number of reads that support a SV to be reported.[10]" }

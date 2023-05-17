@@ -18,25 +18,24 @@ doc: |-
   of samtools head.
 requirements:
   - class: ShellCommandRequirement
-  - class: DockerRequirement
-    dockerPull: 'pgc-images.sbgenomics.com/d3b-bixu/samtools:1.15.1'
   - class: InlineJavascriptRequirement
+  - class: DockerRequirement
+    dockerPull: 'staphb/samtools:1.17'
+  - class: ResourceRequirement
+    coresMin: $(inputs.cpu)
+    ramMin: $(inputs.ram * 1000)
 baseCommand: [samtools, head]
-arguments:
-  - position: 5
-    shellQuote: false
-    valueFrom: >
-      > header.txt
+stdout: header.txt
 inputs:
   input_bam: { type: File, inputBinding: { position: 3 }, doc: "Input bam file" }
   num_records: { type: 'int?', inputBinding: { position: 2, prefix: "--records" }, doc: "Number of record lines to output" }
   num_headers: { type: 'int?', inputBinding: { position: 2, prefix: "--headers" }, doc: "Number of header lines to output" }
   line_filter: { type: 'string?', inputBinding: { position: 4, shellQuote: false, prefix: "| grep" }, doc: "Additional grep filter for samtools head output" } 
+  cpu: { type: 'int?', default: 8, doc: "CPUs to allocate to this task." }
+  ram: { type: 'int?', default: 16, doc: "RAM (in GB) to allocate to this task." }
 outputs:
   header_file:
-    type: File
-    outputBinding:
-      glob: header.txt
+    type: stdout
 
 $namespaces:
   sbg: https://sevenbridges.com

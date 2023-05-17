@@ -26,7 +26,7 @@ requirements:
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)
-  coresMin: $(inputs.cores)
+  coresMin: $(inputs.cpu)
 baseCommand: [pbsv, discover]
 arguments:
 - position: 99
@@ -62,7 +62,7 @@ inputs:
   max_skip_split: { type: 'string?', inputBinding: { prefix: "--max-skip-split", position: 1 }, doc: "Ignore alignment pairs separated by > N bp (e.g. '100', '10K', '3M') of a read or reference." }
 
   # Control
-  cores: { type: 'int?', default: 16, doc: "Number of threads to use" }
+  cpu: { type: 'int?', default: 16, doc: "Number of threads to use" }
   ram: { type: 'int?', default: 32, doc: "RAM (in GB) to use" }
   log_level:
     type:
