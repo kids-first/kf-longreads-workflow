@@ -114,11 +114,11 @@ inputs:
     doc: The output VCF file name. Must end with ".vcf.gz".
   cpu:
     type: 'int?'
-    default: 32
+    default: 36
     doc: CPUs to allocate to this task
   ram:
     type: 'int?'
-    default: 32
+    default: 36
     doc: GB of RAM to allocate to this task 
 outputs:
   output_vcf:

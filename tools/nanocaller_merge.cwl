@@ -16,12 +16,12 @@ requirements:
 - class: InlineJavascriptRequirement
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: genomicslab/lrtools:v0.0.4
+  dockerPull: genomicslab/nanocaller:3.2.0
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)
-  coresMin: $(inputs.cores)
+  coresMin: $(inputs.cpu)
 
-baseCommand: [/bin/bash,-c]
+baseCommand: [/bin/bash, -c]
 
 arguments:
 - position: 1
@@ -37,7 +37,7 @@ inputs:
   input_vcfs: { type: 'File[]', secondaryFiles: [{ pattern: ".tbi", required: false }], doc: "Scattered VCFs from Nanocaller." }
   output_basename: { type: 'string?', default: 'merged', doc: "String to use as basename for output filename." }
 
-  cores: { type: 'int?', default: 1, doc: "Number of input/output compression threads to use in addition to main thread [0]." }
+  cpu: { type: 'int?', default: 1, doc: "Number of input/output compression threads to use in addition to main thread [0]." }
   ram: { type: 'int?', default: 1, doc: "RAM (in GB) to use" }
   
 outputs:

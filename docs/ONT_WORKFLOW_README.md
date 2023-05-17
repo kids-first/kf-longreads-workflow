@@ -15,14 +15,15 @@ information on our collaborators, check out their websites:
 - Wang Genomics Lab: https://wglab.org/
 
 ## Relevant Softwares and Versions
-- [samtools head](http://www.htslib.org/doc/samtools-head.html): `1.15.1`
+- [samtools head](http://www.htslib.org/doc/samtools-head.html): `1.17`
 - [samtools fastq](http://www.htslib.org/doc/samtools-fastq.html): `1.15.1`
 - [Sentieon Minimap2](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#minimap2-binary): `202112.01`
 - [Sentieon util sort](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#util-binary): `202112.01`
-- [LongReadSum](https://github.com/WGLab/LongReadSum#readme): [Unversioned commit](https://github.com/WGLab/LongReadSum/commit/125cd78e49bc4a402d289baa687acf35b555d3e5)
-- [Sniffles](https://github.com/fritzsedlazeck/Sniffles#readme): `2.0.3`
-- [CuteSV](https://github.com/tjiangHIT/cuteSV#readme): `1.0.13`
-- [Nanocaller](https://github.com/WGLab/NanoCaller#readme): `2.1.2`
+- [Sentieon LongReadSV](https://support.sentieon.com/manual/): `202112.06`
+- [LongReadSum](https://github.com/WGLab/LongReadSum#readme): `1.2.0`
+- [Sniffles](https://github.com/fritzsedlazeck/Sniffles#readme): `2.0.7`
+- [CuteSV](https://github.com/tjiangHIT/cuteSV#readme): `2.0.3`
+- [Nanocaller](https://github.com/WGLab/NanoCaller#readme): `3.2.0`
 
 ## Input Files
 - `input_unaligned_bam`: The primary input of the ONT Long Reads Workflow is an unaligned BAM and associated index.
@@ -42,7 +43,13 @@ information on our collaborators, check out their websites:
 1. Generate long reads alignment metrics from the `minimap2_aligned_bam` using LongReadSum.
 1. Generate structural variant calls from the `minimap2_aligned_bam` using CuteSV.
 1. Generate structural variant calls from the `minimap2_aligned_bam` using Sniffles.
-1. Generate small variant from the `minimap2_aligned_bam` using Nanocaller_WGS.
+1. Generate structural variant calls from the `pbmm2_aligned_bam` using Sentieon LongReadSV.
+1. Estimate mean depth of coverage of chr1 and chrX using samtools.
+1. Generate small variant calls from the `minimap2_aligned_bam` using Nanocaller.
+
+## Workflow Trivia
+- Nanocaller runtime is particularly influenced by one of its inputs: `mincov`. This value is something that users should be tuning based on their understanding of the data (particularly quality and coverage). In general as coverage goes up, mincov should also go up to reduce the amount of noise. Even in the absence of user input we should scale this value based on the input BAM; therefore, the workflow will now samtools coverage on chr1 to assess the mean depth of coverage. From there we will set `mincov` to `meandepth / 4` for SNPs and `meandepth / 8` for INDELs. The reason for INDELs being more permissive is the following: The mincov for SNP calling applies to all reads, but for indel calling, it applies to reads from each parental haplotype. So a mincov of 8 for SNP means each position needs to have at least 8 reads to be considered for SNP calling, but for indel calling, it needs 8 from each parental haplotype, so it ends up being 16 reads required at least. Therefore to keep read support parity between SNPs and INDELs, INDELs mincov should be half of SNPs.
+- Input sample sex matters to Nanocaller. Nanocaller in SNP mode and the `phase` flag set will output phased BAM files for all diploid chromosomes in the sample. For male samples this means that phased BAMs are produced for the autosomes (chr1-22); females, however, will have an additional phased BAM for chrX. If the user does not provide the sex of the sample as an input, the workflow will attempt to guess. The workflow will use samtools coverage to calculate the mean depth of coverage for chrX. Using that value as well as the meandepth of coverage calcualted for chr1 (see above), if the chrX/chr1 mean depth ratio is 0.75 or more, the workflow will presume the sample is female and therefore has a diploid X.
 
 ## Basic Info
 - [D3b dockerfiles](https://github.com/d3b-center/bixtools)

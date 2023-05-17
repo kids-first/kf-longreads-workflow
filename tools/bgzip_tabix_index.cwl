@@ -10,7 +10,8 @@ requirements:
     listing: $(inputs.input_vcf)
   - class: InlineJavascriptRequirement
   - class: ResourceRequirement
-    coresMin: $(inputs.cores)
+    coresMin: $(inputs.cpu)
+    ramMin: $(inputs.ram * 1000)
   - class: ShellCommandRequirement
 
 baseCommand: []
@@ -18,7 +19,7 @@ arguments:
   - position: 1
     shellQuote: false
     valueFrom: >-
-      bgzip -@ $(inputs.cores) $(inputs.input_vcf.basename)
+      bgzip -@ $(inputs.cpu) $(inputs.input_vcf.basename)
   - position: 2
     shellQuote: false
     valueFrom: >-
@@ -26,7 +27,8 @@ arguments:
 
 inputs:
   input_vcf: { type: 'File', doc: "Position sorted input vcf file"}
-  cores: { type: 'int?', default: 16 }
+  cpu: { type: 'int?', default: 8 }
+  ram: { type: 'int?', default: 16 }
 
 outputs:
   output:

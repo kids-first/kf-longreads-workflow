@@ -8,17 +8,13 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: pgc-images.sbgenomics.com/danmiller/longreadsum:1.0.1
+  dockerPull: genomicslab/longreadsum:v1.2.0
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
-  coresMin: $(inputs.cores)
+  coresMin: $(inputs.cpu)
+  ramMin: $(inputs.ram * 1000)
 baseCommand: []
 arguments:
-- position: 0
-  prefix: ''
-  shellQuote: false
-  valueFrom: |
-    LongReadSum
 - position: 99
   prefix: ''
   shellQuote: false
@@ -30,7 +26,7 @@ inputs:
     type:
       type: enum
       name: input_type
-      symbols: ["bam","f5","fa","fq"]
+      symbols: ["bam","f5","f5s","fa","fq","seqtxt"]
     inputBinding:
       prefix: ""
       position: 1
@@ -44,7 +40,32 @@ inputs:
   # FQ Options
   udqual: { type: 'int?', inputBinding: { prefix: "--udqual", position: 2 }, doc: "User defined quality offset for bases in fq." }
 
+  # SEQTXT Options
+  seq:
+    type:
+      - 'null'
+      - type: enum
+        name: seq
+        symbols: ["0","1"]
+    inputBinding:
+      prefix: "--seq"
+      position: 2
+    doc: "sequencing_summary.txt only? 0 no, 1 yes."
+  sum_type:
+    type:
+      - 'null'
+      - type: enum
+        name: sum_type
+        symbols: ["1","2","3"]
+    inputBinding:
+      prefix: "--sum_type"
+      position: 2
+    doc: "Different fields in sequencing_summary.txt."
+
   # Common Options
+  fontsize: { type: 'int?', inputBinding: { position: 2, prefix: "--fontsize" }, doc: "Font size for plots." }
+  markersize: { type: 'int?', inputBinding: { position: 2, prefix: "--markersize" }, doc: "Marker size for plots." }
+  readCount: { type: 'int[]?', inputBinding: { position: 2, prefix: "--readCount" }, doc: "Set the number of reads to randomly sample from the file." }
   log: { type: 'string?', inputBinding: { prefix: "--log", position: 2 }, doc: "Name for log file" }
   log_level:
     type:
@@ -57,7 +78,6 @@ inputs:
       position: 2
     doc: "Level for logging: ALL(0) < DEBUG(1) < INFO(2) < WARN(3) < ERROR(4) < FATAL(5) < OFF(6)."
   output_dir: { type: 'string?', inputBinding: { prefix: "--outputfolder", position: 2 }, doc: "Name for output directory." }
-  cores: { type: 'int?', inputBinding: { prefix: "--thread", position: 2 }, doc: "The number of threads used by this task" }
   output_basename: { type: 'string?', inputBinding: { prefix: "--outprefix", position: 2 }, doc: "String to use as basename for output(s)." }
   seed: { type: 'int?', inputBinding: { prefix: "--seed", position: 2 }, doc: "The number for random seed." }
   detail:
@@ -70,6 +90,9 @@ inputs:
       prefix: "--detail"
       position: 2
     doc: "Will output detail in files?"
+  cpu: { type: 'int?', default: 16, inputBinding: { prefix: "--thread", position: 2 }, doc: "The number of threads used by this task" }
+  ram: { type: 'int?', default: 16, doc: "GB of ram to allocate to this task" }
 
 outputs:
   outputs: { type: 'Directory', outputBinding: { glob: "$(inputs.output_dir ? inputs.output_dir : 'output_LongReadSum')" }, doc: "Just grab everything I guess" }
+  log_file: { type: 'File?', outputBinding: { glob: "$(inputs.log)" }, doc: "Log file." }

@@ -5,7 +5,8 @@ requirements:
   - class: InlineJavascriptRequirement
   - class: LoadListingRequirement
   - class: ResourceRequirement
-    coresMin: $(inputs.cores)
+    coresMin: $(inputs.cpu)
+    ramMin: $(inputs.ram * 1000)
   - class: InitialWorkDirRequirement
     listing: $(inputs.input_dir)
 baseCommand: [tar, czf]
@@ -21,7 +22,8 @@ inputs:
       position: 2
       valueFrom: $(self.basename)
   # Control
-  cores: { type: 'int?', default: 16, doc: "Number of threads to use." }
+  cpu: { type: 'int?', default: 4, doc: "Number of threads to use." }
+  ram: { type: 'int?', default: 16, doc: "GB of RAM to allocate to this task." }
 outputs:
   output: 
     type: File
