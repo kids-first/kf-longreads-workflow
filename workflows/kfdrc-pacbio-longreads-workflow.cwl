@@ -134,6 +134,20 @@ steps:
       cpu: pbmm2_cpu
       ram: pbmm2_ram
     out: [output_bam]
+  samtools_head_rg:
+    run: ../tools/samtools_head.cwl
+    in:
+      input_bam: pbmm2_align/output_bam
+      line_filter:
+        valueFrom: "@RG"
+      cpu: pbmm2_cpu
+    out: [header_file]
+  rg_samplename:
+    run: ../tools/clt_rg_samplename.cwl
+    in:
+      rg: samtools_head_rg/header_file
+      cpu: pbmm2_cpu
+    out: [sample_name]
   longreadsum:
     hints:
     - class: "sbg:AWSInstanceType"
@@ -225,6 +239,7 @@ steps:
         source: output_basename
         valueFrom: $(self).sniffles.vcf.gz
       reference_fasta: indexed_reference_fasta
+      sample_id: rg_samplename/sample_name
       cpu: sniffles_cpu
       ram: sniffles_ram
     out: [output_vcf, output_snf]
