@@ -48,7 +48,7 @@ doc: |
   1. Generate long reads alignment metrics from the `minimap2_aligned_bam` using LongReadSum.
   1. Generate structural variant calls from the `minimap2_aligned_bam` using CuteSV.
   1. Generate structural variant calls from the `minimap2_aligned_bam` using Sniffles.
-  1. Generate structural variant calls from the `pbmm2_aligned_bam` using Sentieon LongReadSV.
+  1. Generate structural variant calls from the `minimap2_aligned_bam` using Sentieon LongReadSV.
   1. Estimate mean depth of coverage of chr1 and chrX using samtools.
   1. Generate small variant calls from the `minimap2_aligned_bam` using Nanocaller.
 
@@ -227,7 +227,7 @@ steps:
       rg: samtools_head_rg/header_file
       sample: biospecimen_name
       cpu: minimap2_cpu
-    out: [rg_str]
+    out: [rg_str, sample_name]
   minimap2:
     run: ../tools/sentieon_minimap2.cwl
     in:
@@ -300,6 +300,7 @@ steps:
       output_filename:
         source: output_basename
         valueFrom: $(self).cutesv.vcf
+      sample: update_rg_sm/sample_name
       max_cluster_bias_DEL: cutesv_max_cluster_bias_DEL
       diff_ratio_merging_DEL: cutesv_diff_ratio_merging_DEL
       genotype: cutesv_genotype
@@ -327,6 +328,7 @@ steps:
       reference_fasta: indexed_reference_fasta
       tandem_repeats_input_bed: sniffles_tandem_repeats_input_bed
       non_germline: sniffles_non_germline
+      sample_id: update_rg_sm/sample_name
       cpu: sniffles_cpu
       ram: sniffles_ram
     out: [output_vcf, output_snf]
@@ -362,6 +364,7 @@ steps:
       output_basename:
         source: output_basename
         valueFrom: $(self).nanocaller
+      sample_name: update_rg_sm/sample_name
       mode:
         valueFrom: "snps"
       phase:
@@ -401,6 +404,7 @@ steps:
       output_basename:
         source: output_basename
         valueFrom: $(self).nanocaller
+      sample_name: update_rg_sm/sample_name
       mode:
         valueFrom: "indels"
       regions:
@@ -436,6 +440,7 @@ steps:
       output_basename:
         source: output_basename
         valueFrom: $(self).nanocaller
+      sample_name: update_rg_sm/sample_name
       mode:
         valueFrom: "indels"
       regions:

@@ -43,7 +43,7 @@ information on our collaborators, check out their websites:
 1. Generate long reads alignment metrics from the `minimap2_aligned_bam` using LongReadSum.
 1. Generate structural variant calls from the `minimap2_aligned_bam` using CuteSV.
 1. Generate structural variant calls from the `minimap2_aligned_bam` using Sniffles.
-1. Generate structural variant calls from the `pbmm2_aligned_bam` using Sentieon LongReadSV.
+1. Generate structural variant calls from the `minimap2_aligned_bam` using Sentieon LongReadSV.
 1. Estimate mean depth of coverage of chr1 and chrX using samtools.
 1. Generate small variant calls from the `minimap2_aligned_bam` using Nanocaller.
 
