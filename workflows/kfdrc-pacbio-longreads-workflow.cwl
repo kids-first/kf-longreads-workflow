@@ -20,7 +20,10 @@ doc: |
   - Wang Genomics Lab: https://wglab.org/
 
   ## Relevant Softwares and Versions
-  - [pbmm2](https://github.com/PacificBiosciences/pbmm2#readme): `1.10.0`
+  - [samtools head](http://www.htslib.org/doc/samtools-head.html): `1.17`
+  - [samtools fastq](http://www.htslib.org/doc/samtools-fastq.html): `1.15.1`
+  - [Sentieon Minimap2](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#minimap2-binary): `202112.01`
+  - [Sentieon util sort](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#util-binary): `202112.01`
   - [Sentieon DNAScope HiFi](https://support.sentieon.com/manual/): `202112.01`
   - [Sentieon LongReadSV](https://support.sentieon.com/manual/): `202112.06`
   - [LongReadSum](https://github.com/WGLab/LongReadSum#readme): `1.2.0`
@@ -32,19 +35,21 @@ doc: |
   - `indexed_reference_fasta`: Any suitable human reference genome. KFDRC uses `Homo_sapiens_assembly38.fasta` from Broad Institute.
 
   ## Output Files
-  - `dnascope_small_variants`: BGZIP and TABIX indexed VCF containing small variant calls made by Sentieon DNAScope HiFi on `pbmm2_aligned_bam`.
-  - `longreadsum_bam_metrics`: BGZIP TAR containing various metrics collected by LongReadSum from the `pbmm2_aligned_bam`.
-  - `pbmm2_aligned_bam`: Indexed BAM file containing reads from the `input_unaligned_bam` aligned to the `indexed_reference_fasta`.
-  - `pbsv_structural_variants`: BGZIP and TABIX indexed VCF containing structural variant calls made by pbsv on the `pbmm2_aligned_bam`.
-  - `sniffles_structural_variants`: BGZIP and TABIX indexed VCF containing structural variant calls made by Sniffles on the `pbmm2_aligned_bam`.
+  - `dnascope_small_variants`: BGZIP and TABIX indexed VCF containing small variant calls made by Sentieon DNAScope HiFi on `minimap2_aligned_bam`.
+  - `longreadsum_bam_metrics`: BGZIP TAR containing various metrics collected by LongReadSum from the `minimap2_aligned_bam`.
+  - `minimap2_aligned_bam`: Indexed BAM file containing reads from the `input_unaligned_bam` aligned to the `indexed_reference_fasta`.
+  - `pbsv_structural_variants`: BGZIP and TABIX indexed VCF containing structural variant calls made by pbsv on the `minimap2_aligned_bam`.
+  - `sniffles_structural_variants`: BGZIP and TABIX indexed VCF containing structural variant calls made by Sniffles on the `minimap2_aligned_bam`.
 
   ## Generalized Process
-  1. Align `input_unaligned_bam` to `indexed_reference_fasta` using pbmm2.
-  1. Generate long reads alignment metrics from the `pbmm2_aligned_bam` using LongReadSum.
-  1. Generate structural variant calls from the `pbmm2_aligned_bam` using pbsv.
-  1. Generate structural variant calls from the `pbmm2_aligned_bam` using Sniffles.
-  1. Generate structural variant calls from the `pbmm2_aligned_bam` using Sentieon LongReadSV.
-  1. Generate small variant from the `pbmm2_aligned_bam` using Sentieon DNAScope HiFi.
+  1. Read group information (`@RG`) is harvested from the `input_unaligned_bam` header using `samtools head` and `grep`.
+  1. If user provides `biospecimen_name` input, that value replaces the `SM` value pulled in the preceeding step.
+  1. Align `input_unaligned_bam` to `indexed_reference_fasta` with tohe above `@RG` information using samtools fastq, Sentieon Minimap2, and Sentieon sort.
+  1. Generate long reads alignment metrics from the `minimap2_aligned_bam` using LongReadSum.
+  1. Generate structural variant calls from the `minimap2_aligned_bam` using pbsv.
+  1. Generate structural variant calls from the `minimap2_aligned_bam` using Sniffles.
+  1. Generate structural variant calls from the `minimap2_aligned_bam` using Sentieon LongReadSV.
+  1. Generate small variant from the `minimap2_aligned_bam` using Sentieon DNAScope HiFi.
 
   ## Basic Info
   - [D3b dockerfiles](https://github.com/d3b-center/bixtools)
@@ -78,20 +83,27 @@ inputs:
       \ this value will override the SM value provided in the input_unaligned_bam."}
   sentieon_license: {type: 'string?', doc: "License server host and port for Sentieon\
       \ tools.", default: "10.5.64.221:8990"}
-  pbmm2_preset:
+  minimap2_preset:
     type:
-    - type: enum
-      name: preset
-      symbols: ["SUBREAD", "CCS", "HIFI", "ISOSEQ", "UNROLLED"]
-    doc: |
-      Set alignment mode. See below for preset parameter details.
-      Alignment modes of --preset:
-          SUBREAD     : -k 19 -w 10    -o 5 -O 56 -e 4 -E 1 -A 2 -B 5 -z 400 -Z 50  -r 2000   -L 0.5 -g 5000
-          CCS or HiFi : -k 19 -w 10 -u -o 5 -O 56 -e 4 -E 1 -A 2 -B 5 -z 400 -Z 50  -r 2000   -L 0.5 -g 5000
-          ISOSEQ      : -k 15 -w 5  -u -o 2 -O 32 -e 1 -E 0 -A 1 -B 2 -z 200 -Z 100 -r 200000 -L 0.5 -g 2000 -C 5 -G 200000
-          UNROLLED    : -k 15 -w 15    -o 2 -O 32 -e 1 -E 0 -A 1 -B 2 -z 200 -Z 100 -r 2000   -L 0.5 -g 10000
-  pbmm2_cpu: {type: 'int?', doc: "CPU Cores for pbmm2 to use."}
-  pbmm2_ram: {type: 'int?', doc: "RAM (in GB) for pbmm2 to use."}
+    - name: minimap2_preset
+      type: enum
+      symbols:
+      - map-pb
+      - asm20
+      - ava-pb
+      - splice:hq
+      - map-hifi
+    doc: |-
+      Select one of the preset options prepared by the tool authors. Selecting one of
+      these options will apply multiple options at the same time. Use presets for the
+      following cases:
+        - map-pb: PacBio CLR genomic reads
+        - map-hifi: PacBio HiFi/CCS genomic reads (v2.19 or later)
+        - asm20: PacBio HiFi/CCS genomic reads (v2.18 or earlier)
+        - ava-pb: PacBio read overlap
+        - splice:hq: Final PacBio Iso-seq or traditional cDNA
+  minimap2_cpu: {type: 'int?', default: 36, doc: "CPU Cores for minimap2 to use."}
+  minimap2_ram: {type: 'int?', doc: "RAM (in GB) for minimap2 to use."}
   longreadsum_cpu: {type: 'int?', doc: "CPU Cores for longreadsum to use."}
   dnascope_cpu: {type: 'int?', doc: "CPU Cores for dnascope to use."}
   dnascope_ram: {type: 'int?', doc: "RAM (in GB) for dnascope to use."}
@@ -102,8 +114,8 @@ inputs:
   longreadsv_cpu: {type: 'int?', doc: "CPU Cores for Sentieon LongReadSV to use."}
   longreadsv_ram: {type: 'int?', doc: "RAM (in GB) for Sentieon LongReadSV to use."}
 outputs:
-  pbmm2_aligned_bam: {type: 'File', secondaryFiles: [{pattern: '.bai', required: true}],
-    outputSource: pbmm2_align/output_bam, doc: "BAM file and index generated by pbmm2"}
+  minimap2_aligned_bam: {type: 'File', secondaryFiles: [{pattern: '.bai', required: true}],
+    outputSource: minimap2/out_alignments, doc: "Aligned BAM file from Minimap2."}
   longreadsum_bam_metrics: {type: 'File', outputSource: tar_longreadsum_dir/output,
     doc: "TAR.GZ file containing longreadsum-generated metrics."}
   dnascope_small_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi', required: true}],
@@ -119,35 +131,42 @@ outputs:
         required: true}], outputSource: sentieon_longreadsv/output_vcf, doc: "VCF.GZ\
       \ file and index containing Sentieon LongReadSV-generated SV calls."}
 steps:
-  pbmm2_align:
-    run: ../tools/pbmm2_align.cwl
-    in:
-      reference: indexed_reference_fasta
-      input_reads: input_unaligned_bam
-      output_filename:
-        source: output_basename
-        valueFrom: $(self).pbmm2.bam
-      sort:
-        valueFrom: $(1 == 1)
-      preset: pbmm2_preset
-      sample_name: biospecimen_name
-      cpu: pbmm2_cpu
-      ram: pbmm2_ram
-    out: [output_bam]
   samtools_head_rg:
     run: ../tools/samtools_head.cwl
     in:
-      input_bam: pbmm2_align/output_bam
+      input_bam: input_unaligned_bam
       line_filter:
-        valueFrom: "@RG"
-      cpu: pbmm2_cpu
+        valueFrom: "^@RG"
+      cpu: minimap2_cpu
     out: [header_file]
-  rg_samplename:
-    run: ../tools/clt_rg_samplename.cwl
+  update_rg_sm:
+    run: ../tools/clt_preparerg.cwl
     in:
       rg: samtools_head_rg/header_file
-      cpu: pbmm2_cpu
-    out: [sample_name]
+      sample: biospecimen_name
+      cpu: minimap2_cpu
+    out: [rg_str, sample_name]
+  minimap2:
+    run: ../tools/sentieon_minimap2.cwl
+    in:
+      in_reads:
+        source: input_unaligned_bam
+        valueFrom: $([self])
+      reference: indexed_reference_fasta
+      input_type:
+        valueFrom: 'uBAM'
+      output_basename:
+        source: output_basename
+        valueFrom: $(self).minimap2
+      sentieon_license: sentieon_license
+      preset_option: minimap2_preset
+      read_group_line: update_rg_sm/rg_str
+      soft_clipping:
+        valueFrom: |
+          $(1 == 1)
+      cpu_per_job: minimap2_cpu
+      mem_per_job: minimap2_ram
+    out: [out_alignments]
   longreadsum:
     hints:
     - class: "sbg:AWSInstanceType"
@@ -156,7 +175,7 @@ steps:
     in:
       input_type:
         valueFrom: "bam"
-      input_file: pbmm2_align/output_bam
+      input_file: minimap2/out_alignments
       output_dir: output_basename
       output_basename: output_basename
       log:
@@ -178,7 +197,7 @@ steps:
     in:
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
-      input_bam: pbmm2_align/output_bam
+      input_bam: minimap2/out_alignments
       output_file_name:
         source: output_basename
         valueFrom: $(self).dnascope.vcf.gz
@@ -191,14 +210,14 @@ steps:
       value: c5.9xlarge
     run: ../tools/pbsv_discover.cwl
     in:
-      input_bam: pbmm2_align/output_bam
+      input_bam: minimap2/out_alignments
       output_filename:
         source: output_basename
         valueFrom: $(self).pbsv.svsig.gz
       hifi_preset:
-        source: pbmm2_preset
+        source: minimap2_preset
         valueFrom: |
-          $(self == "HIFI" || self == "CCS")
+          $(self == "map-hifi")
       cpu: pbsv_cpu
       ram: pbsv_ram
     out: [output_svsig]
@@ -214,9 +233,9 @@ steps:
         source: output_basename
         valueFrom: $(self).pbsv.vcf
       hifi_preset:
-        source: pbmm2_preset
+        source: minimap2_preset
         valueFrom: |
-          $(self == "HIFI" || self == "CCS")
+          $(self == "map-hifi")
       cpu: pbsv_cpu
       ram: pbsv_ram
     out: [output_vcf]
@@ -233,13 +252,13 @@ steps:
     run: ../tools/sniffles.cwl
     in:
       input_bam:
-        source: pbmm2_align/output_bam
+        source: minimap2/out_alignments
         valueFrom: $([self])
       vcf_output_filename:
         source: output_basename
         valueFrom: $(self).sniffles.vcf.gz
       reference_fasta: indexed_reference_fasta
-      sample_id: rg_samplename/sample_name
+      sample_id: update_rg_sm/sample_name
       cpu: sniffles_cpu
       ram: sniffles_ram
     out: [output_vcf, output_snf]
@@ -248,7 +267,7 @@ steps:
     in:
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
-      input_bam: pbmm2_align/output_bam
+      input_bam: minimap2/out_alignments
       platform:
         valueFrom: "PacBioHiFi"
       output_file_name:

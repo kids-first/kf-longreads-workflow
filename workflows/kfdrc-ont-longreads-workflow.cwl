@@ -94,20 +94,16 @@ inputs:
     - name: minimap2_preset
       type: enum
       symbols:
-      - map-pb
       - map-ont
-      - asm5
-      - asm10
-      - asm20
-      - ava-pb
       - ava-ont
       - splice
-      - splice:hq
-      - sr
-      - map-hifi
     doc: |-
       Select one of the preset options prepared by the tool authors. Selecting one of
-      these options will apply multiple options at the same time.
+      these options will apply multiple options at the same time. Use presets for the
+      following cases:
+        - map-ont: Oxford Nanopore genomic reads
+        - splice: noisy Nanopore Direct RNA-seq
+        - ava-ont: Nanopore read overlap
   nanocaller_wgs_contigs:
     type:
     - 'null'
@@ -218,11 +214,11 @@ steps:
     in:
       input_bam: input_unaligned_bam
       line_filter:
-        valueFrom: "@RG"
+        valueFrom: "^@RG"
       cpu: minimap2_cpu
     out: [header_file]
   update_rg_sm:
-    run: ../tools/expression_preparerg.cwl
+    run: ../tools/clt_preparerg.cwl
     in:
       rg: samtools_head_rg/header_file
       sample: biospecimen_name
