@@ -15,7 +15,10 @@ information on our collaborators, check out their websites:
 - Wang Genomics Lab: https://wglab.org/
 
 ## Relevant Softwares and Versions
-- [pbmm2](https://github.com/PacificBiosciences/pbmm2#readme): `1.10.0`
+- [samtools head](http://www.htslib.org/doc/samtools-head.html): `1.17`
+- [samtools fastq](http://www.htslib.org/doc/samtools-fastq.html): `1.15.1`
+- [Sentieon Minimap2](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#minimap2-binary): `202112.01`
+- [Sentieon util sort](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#util-binary): `202112.01`
 - [Sentieon DNAScope HiFi](https://support.sentieon.com/manual/): `202112.01`
 - [Sentieon LongReadSV](https://support.sentieon.com/manual/): `202112.06`
 - [LongReadSum](https://github.com/WGLab/LongReadSum#readme): `1.2.0`
@@ -27,19 +30,21 @@ information on our collaborators, check out their websites:
 - `indexed_reference_fasta`: Any suitable human reference genome. KFDRC uses `Homo_sapiens_assembly38.fasta` from Broad Institute.
 
 ## Output Files
-- `dnascope_small_variants`: BGZIP and TABIX indexed VCF containing small variant calls made by Sentieon DNAScope HiFi on `pbmm2_aligned_bam`.
-- `longreadsum_bam_metrics`: BGZIP TAR containing various metrics collected by LongReadSum from the `pbmm2_aligned_bam`.
-- `pbmm2_aligned_bam`: Indexed BAM file containing reads from the `input_unaligned_bam` aligned to the `indexed_reference_fasta`.
-- `pbsv_structural_variants`: BGZIP and TABIX indexed VCF containing structural variant calls made by pbsv on the `pbmm2_aligned_bam`.
-- `sniffles_structural_variants`: BGZIP and TABIX indexed VCF containing structural variant calls made by Sniffles on the `pbmm2_aligned_bam`.
+- `dnascope_small_variants`: BGZIP and TABIX indexed VCF containing small variant calls made by Sentieon DNAScope HiFi on `minimap2_aligned_bam`.
+- `longreadsum_bam_metrics`: BGZIP TAR containing various metrics collected by LongReadSum from the `minimap2_aligned_bam`.
+- `minimap2_aligned_bam`: Indexed BAM file containing reads from the `input_unaligned_bam` aligned to the `indexed_reference_fasta`.
+- `pbsv_structural_variants`: BGZIP and TABIX indexed VCF containing structural variant calls made by pbsv on the `minimap2_aligned_bam`.
+- `sniffles_structural_variants`: BGZIP and TABIX indexed VCF containing structural variant calls made by Sniffles on the `minimap2_aligned_bam`.
 
 ## Generalized Process
-1. Align `input_unaligned_bam` to `indexed_reference_fasta` using pbmm2.
-1. Generate long reads alignment metrics from the `pbmm2_aligned_bam` using LongReadSum.
-1. Generate structural variant calls from the `pbmm2_aligned_bam` using pbsv.
-1. Generate structural variant calls from the `pbmm2_aligned_bam` using Sniffles.
-1. Generate structural variant calls from the `pbmm2_aligned_bam` using Sentieon LongReadSV.
-1. Generate small variant from the `pbmm2_aligned_bam` using Sentieon DNAScope HiFi.
+1. Read group information (`@RG`) is harvested from the `input_unaligned_bam` header using `samtools head` and `grep`.
+1. If user provides `biospecimen_name` input, that value replaces the `SM` value pulled in the preceeding step.
+1. Align `input_unaligned_bam` to `indexed_reference_fasta` with tohe above `@RG` information using samtools fastq, Sentieon Minimap2, and Sentieon sort.
+1. Generate long reads alignment metrics from the `minimap2_aligned_bam` using LongReadSum.
+1. Generate structural variant calls from the `minimap2_aligned_bam` using pbsv.
+1. Generate structural variant calls from the `minimap2_aligned_bam` using Sniffles.
+1. Generate structural variant calls from the `minimap2_aligned_bam` using Sentieon LongReadSV.
+1. Generate small variant from the `minimap2_aligned_bam` using Sentieon DNAScope HiFi.
 
 ## Basic Info
 - [D3b dockerfiles](https://github.com/d3b-center/bixtools)
