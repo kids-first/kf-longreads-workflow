@@ -40,6 +40,7 @@ doc: |
   - `minimap2_aligned_bam`: Indexed BAM file containing reads from the `input_unaligned_bam` aligned to the `indexed_reference_fasta`.
   - `pbsv_structural_variants`: BGZIP and TABIX indexed VCF containing structural variant calls made by pbsv on the `minimap2_aligned_bam`.
   - `sniffles_structural_variants`: BGZIP and TABIX indexed VCF containing structural variant calls made by Sniffles on the `minimap2_aligned_bam`.
+  - `longreadsv_structural_variants`: BGZIP and TABIX indexed VCF containing structural variant calls made by Sentieon LongReadSV on the `minimap2_aligned_bam`.
 
   ## Generalized Process
   1. Read group information (`@RG`) is harvested from the `input_unaligned_bam` header using `samtools head` and `grep`.
@@ -306,5 +307,5 @@ hints:
 - WGS
 - WXS
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-longreads-workflow/releases/tag/v1.0.0'
+- id: 'https://github.com/kids-first/kf-longreads-workflow/releases/tag/v2.0.0'
   label: github-release
