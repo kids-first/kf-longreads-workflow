@@ -27,15 +27,19 @@ outputs:
     outputBinding:
       outputEval: |
         ${
-            var arr = inputs.rg.contents.trim().split('\t');
-            var old_sms = arr.filter(function(e) { return e.search(/^SM/) != -1 });
-            var new_sm = (inputs.sample != null ? inputs.sample : old_sms.length == 0 ? "UNKNOWN" : old_sms[0].split(":")[1]);
-            if (old_sms.length == 0) {
-              arr.push("SM:" + new_sm);
-            } else {
-              arr[arr.indexOf(old_sms[0])] = "SM:" + new_sm;
-            }
-            return arr.join('\\t');
+            var rgs = inputs.rg.contents.trim().split('\n');
+            var out = rgs.map(function(e) {
+              rg_line = e.split("\t");
+              old_sm = rg_line.filter(function(el) { return el.search(/^SM/) != -1 })[0];
+              new_sm = (inputs.sample != null ? "SM:" + inputs.sample : old_sm != null ? old_sm : "SM:UNKNOWN");
+              if (old_sm == null) {
+                rg_line.push(new_sm);
+              } else {
+                rg_line[rg_line.indexOf(old_sm)] = new_sm;
+              }
+              return rg_line.join('\\t');
+            });
+            return out.join('\n');
         }
   sample_name:
     type: string
