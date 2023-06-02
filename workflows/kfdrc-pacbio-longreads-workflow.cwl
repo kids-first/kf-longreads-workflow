@@ -116,7 +116,7 @@ inputs:
   longreadsv_ram: {type: 'int?', doc: "RAM (in GB) for Sentieon LongReadSV to use."}
 outputs:
   minimap2_aligned_bam: {type: 'File', secondaryFiles: [{pattern: '.bai', required: true}],
-    outputSource: sentieon_readwriter_merge_sort/output_reads, doc: "Aligned BAM file from Minimap2."}
+    outputSource: clt_pickvalue/outfile, doc: "Aligned BAM file from Minimap2."}
   longreadsum_bam_metrics: {type: 'File', outputSource: tar_longreadsum_dir/output,
     doc: "TAR.GZ file containing longreadsum-generated metrics."}
   dnascope_small_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi', required: true}],
@@ -165,7 +165,7 @@ steps:
     scatterMethod: dotproduct
     in:
       in_reads:
-        source: samtools_split/output 
+        source: samtools_split/output
         valueFrom: $([self])
       reference: indexed_reference_fasta
       input_type:
@@ -184,6 +184,7 @@ steps:
     out: [out_alignments]
   sentieon_readwriter_merge_sort:
     run: ../tools/sentieon_ReadWriter.cwl
+    when: $(inputs.input_bam.length > 1)
     in:
       input_bam: minimap2/out_alignments
       reference: indexed_reference_fasta
@@ -193,6 +194,15 @@ steps:
         valueFrom: $(self).minimap2.bam
       cpu_per_job: minimap2_cpu
     out: [output_reads]
+  clt_pickvalue:
+    run: ../tools/clt_pickvalue.cwl
+    in:
+      infile:
+        source: [sentieon_readwriter_merge_sort/output_reads, minimap2/out_alignments]
+        valueFrom: |
+          $(self[0] == null ? self[1][0] : self[0])
+      cpu: minimap2_cpu
+    out: [outfile]
   longreadsum:
     hints:
     - class: "sbg:AWSInstanceType"
@@ -201,7 +211,7 @@ steps:
     in:
       input_type:
         valueFrom: "bam"
-      input_file: sentieon_readwriter_merge_sort/output_reads
+      input_file: clt_pickvalue/outfile
       output_dir: output_basename
       output_basename: output_basename
       log:
@@ -215,7 +225,7 @@ steps:
     in:
       output_filename:
         source: output_basename
-        valueFrom: $(self).tar.gz
+        valueFrom: $(self).longreadsum.tar.gz
       input_dir: longreadsum/outputs
     out: [output]
   dnascope:
@@ -223,7 +233,7 @@ steps:
     in:
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
-      input_bam: sentieon_readwriter_merge_sort/output_reads
+      input_bam: clt_pickvalue/outfile
       output_file_name:
         source: output_basename
         valueFrom: $(self).dnascope.vcf.gz
@@ -236,7 +246,7 @@ steps:
       value: c5.9xlarge
     run: ../tools/pbsv_discover.cwl
     in:
-      input_bam: sentieon_readwriter_merge_sort/output_reads
+      input_bam: clt_pickvalue/outfile
       output_filename:
         source: output_basename
         valueFrom: $(self).pbsv.svsig.gz
@@ -278,7 +288,7 @@ steps:
     run: ../tools/sniffles.cwl
     in:
       input_bam:
-        source: sentieon_readwriter_merge_sort/output_reads
+        source: clt_pickvalue/outfile
         valueFrom: $([self])
       vcf_output_filename:
         source: output_basename
@@ -295,7 +305,7 @@ steps:
     in:
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
-      input_bam: sentieon_readwriter_merge_sort/output_reads
+      input_bam: clt_pickvalue/outfile
       platform:
         valueFrom: "PacBioHiFi"
       output_file_name:

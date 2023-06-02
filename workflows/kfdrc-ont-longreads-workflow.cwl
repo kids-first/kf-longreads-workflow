@@ -194,7 +194,7 @@ inputs:
   longreadsv_ram: {type: 'int?', doc: "RAM (in GB) for Sentieon LongReadSV to use."}
 outputs:
   minimap2_aligned_bam: {type: 'File', secondaryFiles: [{pattern: '.bai', required: true}],
-    outputSource: minimap2/out_alignments, doc: "Aligned BAM file from Minimap2."}
+    outputSource: clt_pickvalue/outfile, doc: "Aligned BAM file from Minimap2."}
   nanocaller_small_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi', required: true}],
     outputSource: nanocaller_merge_final/merged_vcf, doc: "VCF.GZ file and index containing\
       \ NanoCaller-gerated small variant calls."}
@@ -210,26 +210,40 @@ outputs:
         required: true}], outputSource: sentieon_longreadsv/output_vcf, doc: "VCF.GZ\
       \ file and index containing Sentieon LongReadSV-generated SV calls."}
 steps:
+  samtools_split:
+    run: ../tools/samtools_split.cwl
+    in:
+      input_reads: input_unaligned_bam
+      cpu: minimap2_cpu
+    out: [output]
   samtools_head_rg:
     run: ../tools/samtools_head.cwl
+    scatter: [input_bam]
+    hints:
+    - class: "sbg:AWSInstanceType"
+      value: c5.9xlarge
     in:
-      input_bam: input_unaligned_bam
+      input_bam: samtools_split/output
       line_filter:
         valueFrom: "^@RG"
-      cpu: minimap2_cpu
     out: [header_file]
   update_rg_sm:
     run: ../tools/clt_preparerg.cwl
+    scatter: [rg]
+    hints:
+    - class: "sbg:AWSInstanceType"
+      value: c5.9xlarge
     in:
       rg: samtools_head_rg/header_file
       sample: biospecimen_name
-      cpu: minimap2_cpu
     out: [rg_str, sample_name]
   minimap2:
     run: ../tools/sentieon_minimap2.cwl
+    scatter: [in_reads, read_group_line]
+    scatterMethod: dotproduct
     in:
       in_reads:
-        source: input_unaligned_bam
+        source: samtools_split/output
         valueFrom: $([self])
       reference: indexed_reference_fasta
       input_type:
@@ -240,15 +254,39 @@ steps:
       sentieon_license: sentieon_license
       preset_option: minimap2_preset
       read_group_line: update_rg_sm/rg_str
+      soft_clipping:
+        valueFrom: |
+          $(1 == 1)
       cpu_per_job: minimap2_cpu
       mem_per_job: minimap2_ram
     out: [out_alignments]
+  sentieon_readwriter_merge_sort:
+    run: ../tools/sentieon_ReadWriter.cwl
+    when: $(inputs.input_bam.length > 1)
+    in:
+      input_bam: minimap2/out_alignments
+      reference: indexed_reference_fasta
+      sentieon_license: sentieon_license
+      output_file_name:
+        source: output_basename
+        valueFrom: $(self).minimap2.bam
+      cpu_per_job: minimap2_cpu
+    out: [output_reads]
+  clt_pickvalue:
+    run: ../tools/clt_pickvalue.cwl
+    in:
+      infile:
+        source: [sentieon_readwriter_merge_sort/output_reads, minimap2/out_alignments]
+        valueFrom: |
+          $(self[0] == null ? self[1][0] : self[0])
+      cpu: minimap2_cpu
+    out: [outfile]
   sentieon_longreadsv:
     run: ../tools/sentieon_LongReadSV.cwl
     in:
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
-      input_bam: minimap2/out_alignments
+      input_bam: clt_pickvalue/outfile
       platform:
         valueFrom: "ONT"
       output_file_name:
@@ -265,7 +303,7 @@ steps:
     in:
       input_type:
         valueFrom: "bam"
-      input_file: minimap2/out_alignments
+      input_file: clt_pickvalue/outfile
       output_dir:
         source: output_basename
         valueFrom: $(self).longreadsum
@@ -292,12 +330,14 @@ steps:
     - class: "sbg:AWSInstanceType"
       value: c5.9xlarge
     in:
-      input_bam: minimap2/out_alignments
+      input_bam: clt_pickvalue/outfile
       reference_fasta: indexed_reference_fasta
       output_filename:
         source: output_basename
         valueFrom: $(self).cutesv.vcf
-      sample: update_rg_sm/sample_name
+      sample:
+        source: update_rg_sm/sample_name
+        valueFrom: $(self[0])
       max_cluster_bias_DEL: cutesv_max_cluster_bias_DEL
       diff_ratio_merging_DEL: cutesv_diff_ratio_merging_DEL
       genotype: cutesv_genotype
@@ -317,7 +357,7 @@ steps:
       value: c5.9xlarge
     in:
       input_bam:
-        source: minimap2/out_alignments
+        source: clt_pickvalue/outfile
         valueFrom: $([self])
       vcf_output_filename:
         source: output_basename
@@ -325,7 +365,9 @@ steps:
       reference_fasta: indexed_reference_fasta
       tandem_repeats_input_bed: sniffles_tandem_repeats_input_bed
       non_germline: sniffles_non_germline
-      sample_id: update_rg_sm/sample_name
+      sample_id:
+        source: update_rg_sm/sample_name
+        valueFrom: $(self[0])
       cpu: sniffles_cpu
       ram: sniffles_ram
     out: [output_vcf, output_snf]
@@ -336,7 +378,7 @@ steps:
       value: c5.9xlarge
     in:
       input_reads:
-        source: minimap2/out_alignments
+        source: clt_pickvalue/outfile
         valueFrom: $([self])
       region:
         valueFrom: "chr1"
@@ -348,7 +390,7 @@ steps:
       value: c5.9xlarge
     in:
       input_reads:
-        source: minimap2/out_alignments
+        source: clt_pickvalue/outfile
         valueFrom: $([self])
       region:
         valueFrom: "chrX"
@@ -356,12 +398,14 @@ steps:
   nanocaller_snps:
     run: ../tools/nanocaller.cwl
     in:
-      input_bam: minimap2/out_alignments
+      input_bam: clt_pickvalue/outfile
       indexed_reference_fasta: indexed_reference_fasta
       output_basename:
         source: output_basename
         valueFrom: $(self).nanocaller
-      sample_name: update_rg_sm/sample_name
+      sample_name:
+        source: update_rg_sm/sample_name
+        valueFrom: $(self[0])
       mode:
         valueFrom: "snps"
       phase:
@@ -401,7 +445,9 @@ steps:
       output_basename:
         source: output_basename
         valueFrom: $(self).nanocaller
-      sample_name: update_rg_sm/sample_name
+      sample_name:
+        source: update_rg_sm/sample_name
+        valueFrom: $(self[0])
       mode:
         valueFrom: "indels"
       regions:
@@ -432,12 +478,14 @@ steps:
     - class: sbg:AWSInstanceType
       value: c5.12xlarge
     in:
-      input_bam: minimap2/out_alignments
+      input_bam: clt_pickvalue/outfile
       indexed_reference_fasta: indexed_reference_fasta
       output_basename:
         source: output_basename
         valueFrom: $(self).nanocaller
-      sample_name: update_rg_sm/sample_name
+      sample_name:
+        source: update_rg_sm/sample_name
+        valueFrom: $(self[0])
       mode:
         valueFrom: "indels"
       regions:
