@@ -43,7 +43,7 @@ inputs:
   cpu: { type: 'int?', default: 4, inputBinding: { position: 12, prefix: "--threads" }, doc: "CPUs to allocate to this task." }
   ram: { type: 'int?', default: 16, doc: "RAM (in GB) to allocate to this task." }
 outputs:
-  output: 
+  output:
     type: File[]
     outputBinding:
       glob: "*.*am"
