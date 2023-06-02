@@ -344,5 +344,5 @@ hints:
 - WGS
 - WXS
 "sbg:links":
-- id: 'https://github.com/kids-first/kf-longreads-workflow/releases/tag/v2.0.0'
+- id: 'https://github.com/kids-first/kf-longreads-workflow/releases/tag/v2.0.1'
   label: github-release
