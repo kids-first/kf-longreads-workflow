@@ -50,7 +50,7 @@ doc: |
   1. Generate structural variant calls from the `minimap2_aligned_bam` using pbsv.
   1. Generate structural variant calls from the `minimap2_aligned_bam` using Sniffles.
   1. Generate structural variant calls from the `minimap2_aligned_bam` using Sentieon LongReadSV.
-  1. Generate small variant from the `minimap2_aligned_bam` using Sentieon DNAScope HiFi.
+  1. If the reads are not CLR, Generate small variant from the `minimap2_aligned_bam` using Sentieon DNAScope HiFi.
 
   ## Basic Info
   - [D3b dockerfiles](https://github.com/d3b-center/bixtools)
@@ -230,7 +230,9 @@ steps:
     out: [output]
   dnascope:
     run: ../tools/sentieon_DNAscope_LongRead.cwl
+    when: $(inputs.minimap2_preset != "map-pb")
     in:
+      minimap2_preset: minimap2_preset
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
       input_bam: clt_pickvalue/outfile
