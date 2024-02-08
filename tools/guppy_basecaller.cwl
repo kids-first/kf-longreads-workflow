@@ -24,7 +24,7 @@ requirements:
 - class: InlineJavascriptRequirement
 - class: LoadListingRequirement
 - class: DockerRequirement
-  dockerPull: genomicpariscentre/guppy-gpu:6.4.6
+  dockerPull: 684194535433.dkr.ecr.us-east-1.amazonaws.com/d3b-healthomics:guppy-gpu-6.4.6
 - class: ResourceRequirement
   ramMin: |
     $((inputs.num_callers * inputs.cpu_threads_per_caller + 4) * 1000)

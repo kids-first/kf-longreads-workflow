@@ -14,7 +14,7 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: quay.io/biocontainers/pbmm2:1.10.0--h9ee0642_0
+  dockerPull: 684194535433.dkr.ecr.us-east-1.amazonaws.com/d3b-healthomics:pbmm2-1.10.0--h9ee0642_0
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)

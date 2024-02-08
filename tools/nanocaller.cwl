@@ -15,7 +15,7 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: genomicslab/nanocaller:3.2.0
+  dockerPull: 684194535433.dkr.ecr.us-east-1.amazonaws.com/d3b-healthomics:nanocaller-3.2.0
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)

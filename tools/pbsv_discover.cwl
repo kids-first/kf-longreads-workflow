@@ -22,7 +22,7 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: quay.io/biocontainers/pbsv:2.9.0--h9ee0642_0
+  dockerPull: 684194535433.dkr.ecr.us-east-1.amazonaws.com/d3b-healthomics:pbsv-2.9.0--h9ee0642_0
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)

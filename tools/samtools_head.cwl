@@ -20,7 +20,7 @@ requirements:
   - class: ShellCommandRequirement
   - class: InlineJavascriptRequirement
   - class: DockerRequirement
-    dockerPull: 'staphb/samtools:1.17'
+    dockerPull: '684194535433.dkr.ecr.us-east-1.amazonaws.com/d3b-healthomics:samtools-1.17'
   - class: ResourceRequirement
     coresMin: $(inputs.cpu)
     ramMin: $(inputs.ram * 1000)

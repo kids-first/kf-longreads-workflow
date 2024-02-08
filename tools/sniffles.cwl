@@ -35,7 +35,7 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: pgc-images.sbgenomics.com/d3b-bixu/sniffles:2.0.7
+  dockerPull: 684194535433.dkr.ecr.us-east-1.amazonaws.com/d3b-healthomics:sniffles-2.0.7
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   ramMin: $(inputs.ram * 1000)

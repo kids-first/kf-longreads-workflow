@@ -8,7 +8,7 @@ doc: |
 requirements:
 - class: ShellCommandRequirement
 - class: DockerRequirement
-  dockerPull: genomicslab/longreadsum:v1.2.0
+  dockerPull: 684194535433.dkr.ecr.us-east-1.amazonaws.com/d3b-healthomics:longreadsum-v1.2.0
 - class: InlineJavascriptRequirement
 - class: ResourceRequirement
   coresMin: $(inputs.cpu)

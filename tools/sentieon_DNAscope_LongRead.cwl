@@ -44,7 +44,7 @@ requirements:
         }
     }
 - class: DockerRequirement
-  dockerPull: pgc-images.sbgenomics.com/hdchen/sentieon:202112.01_hifi
+  dockerPull: 684194535433.dkr.ecr.us-east-1.amazonaws.com/d3b-healthomics:sentieon-202112.01_hifi
 - class: EnvVarRequirement
   envDef:
   - envName: SENTIEON_LICENSE
