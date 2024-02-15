@@ -19,11 +19,11 @@ jobs:
       - id: make-ont-table
         name: Make Docker Table for ONT Workflow
         run: |
-          python .github/scripts/workflow_to_docker_table.py --output_file docs/dockers_ont.md workflow/kfdrc-ont-longreads-workflow.cwl
+          python .github/scripts/workflow_to_docker_table.py --output_file docs/dockers_ont.md workflows/kfdrc-ont-longreads-workflow.cwl
       - id: make-pacbio-table
         name: Make Docker Table for PacBio Workflow
         run: |
-          python .github/scripts/workflow_to_docker_table.py --output_file docs/dockers_pacbio.md workflow/kfdrc-pacbio-longreads-workflow.cwl
+          python .github/scripts/workflow_to_docker_table.py --output_file docs/dockers_pacbio.md workflows/kfdrc-pacbio-longreads-workflow.cwl
       - id: cpr
         name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
