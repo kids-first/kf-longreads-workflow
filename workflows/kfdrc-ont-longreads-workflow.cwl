@@ -83,6 +83,7 @@ inputs:
       secondaryFiles: [{class: File, path: 60639016357c3a53540ca7af, name: Homo_sapiens_assembly38.fasta.fai},
         {class: File, path: 60639019357c3a53540ca7e7, name: Homo_sapiens_assembly38.dict}]},
     "sbg:fileTypes": "FASTA, FA"}
+  model_bundle: { type: 'File' }
   output_basename: {type: 'string', doc: "String to use as basename for all workflow\
       \ outputs."}
   biospecimen_name: {type: 'string?', doc: "String name of the biospecimen. Providing\
@@ -246,6 +247,7 @@ steps:
         source: samtools_split/output
         valueFrom: $([self])
       reference: indexed_reference_fasta
+      model_bundle: model_bundle
       input_type:
         valueFrom: 'uBAM'
       output_basename:
@@ -287,8 +289,7 @@ steps:
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
       input_bam: clt_pickvalue/outfile
-      platform:
-        valueFrom: "ONT"
+      model_bundle: model_bundle
       output_file_name:
         source: output_basename
         valueFrom: $(self).longreadsv.vcf.gz

@@ -78,6 +78,7 @@ inputs:
       secondaryFiles: [{class: File, path: 60639016357c3a53540ca7af, name: Homo_sapiens_assembly38.fasta.fai},
         {class: File, path: 60639019357c3a53540ca7e7, name: Homo_sapiens_assembly38.dict}]},
     "sbg:fileTypes": "FASTA, FA"}
+  model_bundle: { type: 'File' }
   output_basename: {type: 'string', doc: "String to use as basename for all workflow\
       \ outputs."}
   biospecimen_name: {type: 'string?', doc: "String name of the biospecimen. Providing\
@@ -119,7 +120,7 @@ outputs:
     outputSource: clt_pickvalue/outfile, doc: "Aligned BAM file from Minimap2."}
   longreadsum_bam_metrics: {type: 'File', outputSource: tar_longreadsum_dir/output,
     doc: "TAR.GZ file containing longreadsum-generated metrics."}
-  dnascope_small_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi', required: true}],
+  dnascope_small_variants: {type: 'File[]', secondaryFiles: [{pattern: '.tbi', required: true}],
     outputSource: dnascope/output_vcf, doc: "VCF.GZ file and index containing DNAscope-generated\
       \ small variant calls."}
   pbsv_strucutural_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi', required: true}],
@@ -175,6 +176,7 @@ steps:
         valueFrom: $(self).minimap2
       sentieon_license: sentieon_license
       preset_option: minimap2_preset
+      model_bundle: model_bundle
       read_group_line: update_rg_sm/rg_str
       soft_clipping:
         valueFrom: |
@@ -236,6 +238,9 @@ steps:
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
       input_bam: clt_pickvalue/outfile
+      model_bundle: model_bundle
+      platform:
+        valueFrom: "HiFi"
       output_file_name:
         source: output_basename
         valueFrom: $(self).dnascope.vcf.gz
@@ -308,8 +313,7 @@ steps:
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
       input_bam: clt_pickvalue/outfile
-      platform:
-        valueFrom: "PacBioHiFi"
+      model_bundle: model_bundle
       output_file_name:
         source: output_basename
         valueFrom: $(self).longreadsv.vcf.gz

@@ -1,6 +1,6 @@
 cwlVersion: v1.2
 class: CommandLineTool
-label: sentieon_minimap2
+id: sentieon_minimap2
 doc: |-
   The Sentieon **minimap2** binary performs alignment of PacBio or Oxford
   Nanopore genomic reads data and will behave the same way as the tool described
@@ -18,7 +18,7 @@ requirements:
   coresMin: $(inputs.cpu_per_job)
   ramMin: $(inputs.mem_per_job * 1000)
 - class: DockerRequirement
-  dockerPull: pgc-images.sbgenomics.com/d3b-bixu/sentieon:202112.01_hifi
+  dockerPull: pgc-images.sbgenomics.com/hdchen/sentieon:202308.02
 - class: EnvVarRequirement
   envDef:
   - envName: SENTIEON_LICENSE
@@ -30,7 +30,7 @@ arguments:
 - prefix: ''
   position: 1
   valueFrom: |
-    $(inputs.input_type == 'uBAM' ? 'samtools fastq ' + inputs.in_reads.map(function(e) {return e.path}).join(' ') + ' | ' : '') 
+    $(inputs.input_type == 'uBAM' ? 'samtools fastq ' + inputs.in_reads.map(function(e) {return e.path}).join(' ') + ' | ' : '')
   shellQuote: false
 - prefix: ''
   position: 100
@@ -61,7 +61,7 @@ arguments:
     ${
         // generate output file name
         var out_name = ""
-        var ext = "" 
+        var ext = ""
         if (inputs.output_basename)
         {
             out_name = inputs.output_basename
@@ -77,7 +77,7 @@ arguments:
             {
                 out_name = reads[0].nameroot
             }
-        } 
+        }
         ext = (inputs.output_type == 'BAM' ? '.bam' : '.paf')
         return out_name + ext
     }
@@ -143,6 +143,7 @@ inputs:
       applied before other options because options applied later will overwrite the
       values set.
   read_group_line: { type: 'string', inputBinding: { position: 112, prefix: "-R", shellQuote: true }, doc: "SAM read group line in a format like '@RG\tID:foo\tSM:bar\tPL:PacBio'" }
+  model_bundle: { type: 'File', inputBinding: { position: 111, prefix: "-x", shellQuote: true, valueFrom: "$(self.path)/minimap2.model" }, doc: "Sentieon model for long reads" }
 
   # Alignment Arguments
   matching_score: { type: 'int?', inputBinding: { position: 112, prefix: "-A" }, doc: "Matching score" }
@@ -179,7 +180,13 @@ inputs:
   mem_per_job: { type: 'int?', default: 36, doc: "Memory per job[GB]" }
 
 outputs:
-  out_alignments: { type: 'File', secondaryFiles: [{ pattern: '.bai', required: false }], outputBinding: { glob: '{*.paf,*.bam}' }, doc: "Output alignment file in PAF or BAM format." }
+  out_alignments:
+    type: File
+    outputBinding:
+      glob: '{*.paf,*.bam}'
+    secondaryFiles: [{pattern: .bai, required: false}]
+    doc: Output alignment file in PAF or BAM format.
+    sbg:fileTypes: PAF, BAM
 
 $namespaces:
   sbg: https://sevenbridges.com
