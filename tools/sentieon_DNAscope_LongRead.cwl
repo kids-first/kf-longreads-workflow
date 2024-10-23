@@ -2,16 +2,16 @@ cwlVersion: v1.2
 class: CommandLineTool
 label: Sentieon_DNAscope_LongRead
 doc: |-
-  This tool uses **Sentieon DNAscope** to call germline variants from PacBio HiFi reads [1].
+  This tool uses **Sentieon DNAscope** to call germline variants from PacBio HiFi or ONT reads [1].
 
   ### Input data requirements
 
-  - **Aligned reads**: The pipeline will take PacBio HiFi reads that have been aligned to a reference genome with `pbmm2` or `minimap2`.
-  - **The Reference genome**: A reference genome file in FASTA format with its index file (.fai). 
+  - **Aligned reads**: The pipeline will take PacBio HiFi or ONT reads that have been aligned to a reference genome with `pbmm2` or `minimap2`.
+  - **The Reference genome**: A reference genome file in FASTA format with its index file (.fai).
+  - **DNAscope model bundle**: DNAscope model.
 
   ### Common Issues and Important Notes
 
-  * By suppling an optional MHC BED file, additional special handling can be applied to the MHC region to further increase variant calling accuracy.
   * Currently, the pipeline is only recommended for use with samples from diploid organisms. For samples with both diploid and haploid chromosomes, the `-b INTERVAL` option can be used to limit variant calling to diploid chromosomes.
 
   ###References
@@ -21,41 +21,48 @@ doc: |-
 requirements:
 - class: ShellCommandRequirement
 - class: ResourceRequirement
-  coresMin: |-
-    ${
-        if (inputs.cpu_per_job)
-        {
-            return inputs.cpu_per_job
-        }
-        else
-        {
-            return 36
-        }
-    }
-  ramMin: |-
-    ${
-        if (inputs.mem_per_job)
-        {
-            return inputs.mem_per_job
-        }
-        else
-        {
-            return 71000
-        }
-    }
+  coresMin: $(inputs.cpu_per_job)
+  ramMin: $(inputs.mem_per_job * 1000)
 - class: DockerRequirement
-  dockerPull: pgc-images.sbgenomics.com/hdchen/sentieon:202112.01_hifi
+  dockerPull: pgc-images.sbgenomics.com/hdchen/sentieon:202308.03
 - class: EnvVarRequirement
   envDef:
   - envName: SENTIEON_LICENSE
     envValue: $(inputs.sentieon_license)
 - class: InlineJavascriptRequirement
-
+- class: InitialWorkDirRequirement
+  listing:
+    - entryname: dnascope_HiFi.sh
+      entry:
+        $include: ../scripts/dnascope_HiFi.sh
+    - entryname: dnascope_ONT.sh
+      entry:
+        $include: ../scripts/dnascope_ONT.sh
+    - entryname: gvcf_combine.py
+      entry:
+        $include: ../scripts/gvcf_combine.py
+    - entryname: vcf_mod.py
+      entry:
+        $include: ../scripts/vcf_mod.py
 inputs:
 - id: sentieon_license
   label: Sentieon license
   doc: License server host and port
   type: string
+- id: platform
+  label: Platform
+  type:
+    - type: enum
+      symbols:
+        - HiFi
+        - ONT
+- id: model_bundle
+  label: DNAscope model bundle
+  type: File
+  inputBinding:
+    prefix: -m
+    position: 10
+    shellQuote: false
 - id: reference
   label: Reference
   doc: Reference fasta with associated fai index
@@ -116,42 +123,45 @@ inputs:
     position: 39
     shellQuote: false
   sbg:fileTypes: BED
-- id: mhc
-  label: MHC BED file
-  doc: |-
-    Supplying this file will enable the special handling of the MHC region. (optional)
-  type: File?
+- id: output_gvcf
+  label: Output gVCF
+  doc: Generate a gVCF output file along with the VCF. Default generates only the VCF
+  type: boolean?
+  default: false
   inputBinding:
-    prefix: -B
-    position: 60
+    prefix: -g
+    position: 40
     shellQuote: false
-  sbg:fileTypes: BED
 - id: cpu_per_job
   label: CPU per job
   doc: CPU per job
   type: int?
+  default: 36
 - id: mem_per_job
   label: Memory per job
-  doc: Memory per job[MB]
+  doc: Memory per job[GB]
   type: int?
+  default: 71
 
 outputs:
 - id: output_vcf
-  type: File
+  type:
+  - type: array
+    items: File
   secondaryFiles:
   - pattern: .tbi
     required: true
   outputBinding:
-    glob: '*.vcf.gz'
-  sbg:fileTypes: VCF.GZ
+    glob: '*vcf.gz'
 
 baseCommand:
 - /bin/bash
-- /opt/dnascope_hifi/DNAscopeHiFiBeta0.4.pipeline/dnascope_HiFi.sh
 arguments:
-- prefix: ''
-  position: 1
-  valueFrom: -m /opt/dnascope_hifi/DNAscopeHiFiBeta0.4.pipeline/DNAscopeHiFiBeta0.4.model
+- position: 1
+  valueFrom: |-
+    ${
+        return "dnascope_" + inputs.platform + ".sh"
+    }
   shellQuote: false
 - prefix: ''
   position: 100

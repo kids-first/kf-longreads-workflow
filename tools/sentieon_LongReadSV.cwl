@@ -8,7 +8,7 @@ doc: |-
   #### Required
   - ``Reference``: Location of the reference FASTA file.
   - ``Input BAM``: Location of the BAM/CRAM input file.
-  - ``Platform``: PacBio HiFi or Oxford Nanopore
+  - ``Model``: LongReadSV Model bundle
 
 requirements:
 - class: ShellCommandRequirement
@@ -17,7 +17,7 @@ requirements:
   coresMin: $(inputs.cpu) 
   ramMin: $(inputs.ram * 1000) 
 - class: DockerRequirement
-  dockerPull: pgc-images.sbgenomics.com/hdchen/sentieon:202112.06
+  dockerPull: pgc-images.sbgenomics.com/hdchen/sentieon:202308.02
 - class: EnvVarRequirement
   envDef:
   - envName: SENTIEON_LICENSE
@@ -64,32 +64,13 @@ inputs:
       shellQuote: false
     doc: Input BAM file
     sbg:fileTypes: BAM, CRAM
-  platform:
-    type:
-    - 'null'
-    - name: platform
-      type: enum
-      symbols:
-      - PacBioHiFi
-      - ONT
-    default: PacBioHiFi
+  model_bundle:
+    type: File
     inputBinding:
       prefix: --model
       position: 11
-      shellQuote: true
       valueFrom: |-
-        ${
-            if (self === "PacBioHiFi") {
-                return "/opt/dnascope_models/SentieonLongReadSVHiFiBeta0.1.model";
-            }
-            else if (self === "ONT") {
-                return "/opt/dnascope_models/SentieonLongReadSVONTBeta0.1.model";
-            }
-            return ""
-         }
-    doc: |-
-      PacBio HiFi or Oxford Nanopore (ONT)
-    sbg:toolDefaultValue: PacBioHiFi
+        $(self.path)/longreadsv.model
   min_sv_size:
     type: 'int?'
     inputBinding:
@@ -106,6 +87,14 @@ inputs:
       position: 12
     doc:  minimum read mapping quality
     sbg:toolDefaultValue: 20
+  min_af:
+    type: float?
+    inputBinding:
+      prefix: --min_af
+      shellQuote: true
+      position: 12
+    doc:  Minimum af
+    sbg:toolDefaultValue: 0.15
   output_file_name:
     type: 'string'
     inputBinding:
