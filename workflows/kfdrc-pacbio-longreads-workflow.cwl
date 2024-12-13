@@ -117,7 +117,7 @@ outputs:
     outputSource: clt_pickvalue/outfile, doc: "Aligned BAM file from Minimap2."}
   longreadsum_bam_metrics: {type: 'File', outputSource: tar_longreadsum_dir/output,
     doc: "TAR.GZ file containing longreadsum-generated metrics."}
-  dnascope_small_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi', required: true}],
+  dnascope_small_variants: {type: 'File?', secondaryFiles: [{pattern: '.tbi', required: true}],
     outputSource: dnascope/small_variants, doc: "VCF.GZ file and index containing DNAscope-generated\
       \ small variant calls."}
   pbsv_strucutural_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi', required: true}],
@@ -234,9 +234,7 @@ steps:
     out: [model_bundle]
   dnascope:
     run: ../tools/sentieon_DNAscope_LongRead_CLI.cwl
-    when: $(inputs.minimap2_preset != "map-pb")
     in:
-      minimap2_preset: minimap2_preset
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
       input_bam: 
@@ -250,6 +248,9 @@ steps:
         valueFrom: $(self).dnascope.vcf.gz
       skip-mosdepth:
         default: true
+      skip-small-variants:
+        source: minimap2_preset
+        valueFrom: $(inputs.minimap2_preset == "map-pb")
       cpu_per_job: dnascope_cpu
       mem_per_job: dnascope_ram
     out: [small_variants, structural_variants]
