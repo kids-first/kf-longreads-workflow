@@ -250,7 +250,7 @@ steps:
         default: true
       skip-small-variants:
         source: minimap2_preset
-        valueFrom: $(inputs.minimap2_preset == "map-pb")
+        valueFrom: $(self == "map-pb")
       cpu_per_job: dnascope_cpu
       mem_per_job: dnascope_ram
     out: [small_variants, structural_variants]
