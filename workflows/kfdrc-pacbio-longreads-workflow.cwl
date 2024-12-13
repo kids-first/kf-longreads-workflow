@@ -22,10 +22,10 @@ doc: |
   ## Relevant Softwares and Versions
   - [samtools head](http://www.htslib.org/doc/samtools-head.html): `1.17`
   - [samtools fastq](http://www.htslib.org/doc/samtools-fastq.html): `1.15.1`
-  - [Sentieon Minimap2](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#minimap2-binary): `202112.01`
-  - [Sentieon util sort](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#util-binary): `202112.01`
-  - [Sentieon DNAScope HiFi](https://support.sentieon.com/manual/): `202112.01`
-  - [Sentieon LongReadSV](https://support.sentieon.com/manual/): `202112.06`
+  - [Sentieon Minimap2](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#minimap2-binary): `202308.03`
+  - [Sentieon util sort](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#util-binary): `202308.03`
+  - [Sentieon DNAScope HiFi](https://support.sentieon.com/manual/): `202308.03`
+  - [Sentieon LongReadSV](https://support.sentieon.com/manual/): `202308.03`
   - [LongReadSum](https://github.com/WGLab/LongReadSum#readme): `1.2.0`
   - [Sniffles](https://github.com/fritzsedlazeck/Sniffles#readme): `2.0.7`
   - [pbsv](https://github.com/PacificBiosciences/pbsv#readme): `2.9.0`
@@ -112,15 +112,13 @@ inputs:
   pbsv_ram: {type: 'int?', doc: "RAM (in GB) for pbsv to use."}
   sniffles_cpu: {type: 'int?', doc: "CPU Cores for sniffles to use."}
   sniffles_ram: {type: 'int?', doc: "RAM (in GB) for sniffles to use."}
-  longreadsv_cpu: {type: 'int?', doc: "CPU Cores for Sentieon LongReadSV to use."}
-  longreadsv_ram: {type: 'int?', doc: "RAM (in GB) for Sentieon LongReadSV to use."}
 outputs:
   minimap2_aligned_bam: {type: 'File', secondaryFiles: [{pattern: '.bai', required: true}],
     outputSource: clt_pickvalue/outfile, doc: "Aligned BAM file from Minimap2."}
   longreadsum_bam_metrics: {type: 'File', outputSource: tar_longreadsum_dir/output,
     doc: "TAR.GZ file containing longreadsum-generated metrics."}
   dnascope_small_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi', required: true}],
-    outputSource: dnascope/output_vcf, doc: "VCF.GZ file and index containing DNAscope-generated\
+    outputSource: dnascope/small_variants, doc: "VCF.GZ file and index containing DNAscope-generated\
       \ small variant calls."}
   pbsv_strucutural_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi', required: true}],
     outputSource: bgzip_tabix_index_pbsv_vcf/output, doc: "VCF.GZ file and index containing\
@@ -129,7 +127,7 @@ outputs:
         required: true}], outputSource: sniffles/output_vcf, doc: "VCF.GZ file and\
       \ index containing sniffles-generated SV calls."}
   longreadsv_structural_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi',
-        required: true}], outputSource: sentieon_longreadsv/output_vcf, doc: "VCF.GZ\
+        required: true}], outputSource: dnascope/structural_variants, doc: "VCF.GZ\
       \ file and index containing Sentieon LongReadSV-generated SV calls."}
 steps:
   samtools_split:
@@ -228,20 +226,33 @@ steps:
         valueFrom: $(self).longreadsum.tar.gz
       input_dir: longreadsum/outputs
     out: [output]
+  download_model:
+    run: ../tools/download_DNAscope_model.cwl
+    in:
+      model_name:
+        valueFrom: "PacBio_HiFi-WGS"
+    out: [model_bundle]
   dnascope:
-    run: ../tools/sentieon_DNAscope_LongRead.cwl
+    run: ../tools/sentieon_DNAscope_LongRead_CLI.cwl
     when: $(inputs.minimap2_preset != "map-pb")
     in:
       minimap2_preset: minimap2_preset
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
-      input_bam: clt_pickvalue/outfile
-      output_file_name:
+      input_bam: 
+        source: [clt_pickvalue/outfile]
+        linkMerge: merge_flattened
+      model_bundle: download_model/model_bundle
+      tech:
+        valueFrom: "HiFi"
+      output_vcf:
         source: output_basename
         valueFrom: $(self).dnascope.vcf.gz
+      skip-mosdepth:
+        default: true
       cpu_per_job: dnascope_cpu
       mem_per_job: dnascope_ram
-    out: [output_vcf]
+    out: [small_variants, structural_variants]
   pbsv_discover:
     hints:
     - class: "sbg:AWSInstanceType"
@@ -302,20 +313,6 @@ steps:
       cpu: sniffles_cpu
       ram: sniffles_ram
     out: [output_vcf, output_snf]
-  sentieon_longreadsv:
-    run: ../tools/sentieon_LongReadSV.cwl
-    in:
-      sentieon_license: sentieon_license
-      reference: indexed_reference_fasta
-      input_bam: clt_pickvalue/outfile
-      platform:
-        valueFrom: "PacBioHiFi"
-      output_file_name:
-        source: output_basename
-        valueFrom: $(self).longreadsv.vcf.gz
-      cpu: longreadsv_cpu
-      ram: longreadsv_ram
-    out: [output_vcf]
 $namespaces:
   sbg: https://sevenbridges.com
 hints:
