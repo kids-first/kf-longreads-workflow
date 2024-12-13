@@ -126,7 +126,7 @@ inputs:
     type: File?
     inputBinding:
       position: 10
-      prefix: --haploid-
+      prefix: --haploid-bed
     sbg:fileTypes: BED
   gvcf:
     type: boolean?
