@@ -190,8 +190,8 @@ inputs:
   cutesv_ram: {type: 'int?', doc: "RAM (in GB) for cutesv to use."}
   sniffles_cpu: {type: 'int?', doc: "CPU Cores for sniffles to use."}
   sniffles_ram: {type: 'int?', doc: "RAM (in GB) for sniffles to use."}
-  longreadsv_cpu: {type: 'int?', doc: "CPU Cores for Sentieon LongReadSV to use."}
-  longreadsv_ram: {type: 'int?', doc: "RAM (in GB) for Sentieon LongReadSV to use."}
+  dnascope_cpu: {type: 'int?', doc: "CPU Cores for Sentieon DNAscope to use."}
+  dnascope_ram: {type: 'int?', doc: "RAM (in GB) for Sentieon DNAscope to use."}
 outputs:
   minimap2_aligned_bam: {type: 'File', secondaryFiles: [{pattern: '.bai', required: true}],
     outputSource: clt_pickvalue/outfile, doc: "Aligned BAM file from Minimap2."}
@@ -206,8 +206,11 @@ outputs:
   sniffles_structural_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi',
         required: true}], outputSource: sniffles/output_vcf, doc: "VCF.GZ file and\
       \ index containing sniffles-generated SV calls."}
+  dnascope_small_variants: {type: 'File?', secondaryFiles: [{pattern: '.tbi', required: true}],
+    outputSource: dnascope/small_variants, doc: "VCF.GZ file and index containing DNAscope-generated\
+      \ small variant calls."}
   longreadsv_structural_variants: {type: 'File', secondaryFiles: [{pattern: '.tbi',
-        required: true}], outputSource: sentieon_longreadsv/output_vcf, doc: "VCF.GZ\
+        required: true}], outputSource: dnascope/structural_variants, doc: "VCF.GZ\
       \ file and index containing Sentieon LongReadSV-generated SV calls."}
 steps:
   samtools_split:
@@ -281,20 +284,31 @@ steps:
           $(self[0] == null ? self[1][0] : self[0])
       cpu: minimap2_cpu
     out: [outfile]
-  sentieon_longreadsv:
-    run: ../tools/sentieon_LongReadSV.cwl
+  download_model:
+    run: ../tools/download_DNAscope_model.cwl
+    in:
+      model_name:
+        valueFrom: "Oxford_Nanopore-WGS"
+    out: [model_bundle]
+  dnascope:
+    run: ../tools/sentieon_DNAscope_LongRead_CLI.cwl
     in:
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
-      input_bam: clt_pickvalue/outfile
-      platform:
+      input_bam: 
+        source: [clt_pickvalue/outfile]
+        linkMerge: merge_flattened
+      model_bundle: download_model/model_bundle
+      tech:
         valueFrom: "ONT"
-      output_file_name:
+      output_vcf:
         source: output_basename
-        valueFrom: $(self).longreadsv.vcf.gz
-      cpu: longreadsv_cpu
-      ram: longreadsv_ram
-    out: [output_vcf]
+        valueFrom: $(self).dnascope.vcf.gz
+      skip-mosdepth:
+        default: true
+      cpu_per_job: dnascope_cpu
+      mem_per_job: dnascope_ram
+    out: [small_variants, structural_variants]
   longreadsum:
     run: ../tools/longreadsum.cwl
     hints:
