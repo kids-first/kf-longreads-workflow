@@ -1,6 +1,6 @@
 cwlVersion: v1.2
 class: CommandLineTool
-label: Sentieon_DNAscope_LongRead
+id: sentieon_DNAscope_LongRead_CLI
 doc: |-
   This tool uses **Sentieon DNAscope** to call germline variants from PacBio HiFi reads [1].
 
@@ -11,28 +11,8 @@ doc: |-
 requirements:
 - class: ShellCommandRequirement
 - class: ResourceRequirement
-  coresMin: |-
-    ${
-        if (inputs.cpu_per_job)
-        {
-            return inputs.cpu_per_job
-        }
-        else
-        {
-            return 36
-        }
-    }
-  ramMin: |-
-    ${
-        if (inputs.mem_per_job)
-        {
-            return inputs.mem_per_job
-        }
-        else
-        {
-            return 71000
-        }
-    }
+  coresMin: $(inputs.cpu_per_job)
+  ramMin: $(inputs.mem_per_job * 1000)
 - class: DockerRequirement
   dockerPull: pgc-images.sbgenomics.com/hdchen/sentieon:202308.03
 - class: EnvVarRequirement
@@ -204,10 +184,12 @@ inputs:
     label: CPU per job
     doc: CPU per job
     type: int?
+    default: 36
   mem_per_job:
     label: Memory per job
-    doc: Memory per job[MB].
+    doc: Memory per job[GB].
     type: int?
+    default: 71
 
 outputs:
   small_variants:

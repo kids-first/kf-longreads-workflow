@@ -22,9 +22,9 @@ doc: |
   ## Relevant Softwares and Versions
   - [samtools head](http://www.htslib.org/doc/samtools-head.html): `1.17`
   - [samtools fastq](http://www.htslib.org/doc/samtools-fastq.html): `1.15.1`
-  - [Sentieon Minimap2](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#minimap2-binary): `202112.01`
-  - [Sentieon util sort](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#util-binary): `202112.01`
-  - [Sentieon LongReadSV](https://support.sentieon.com/manual/): `202112.06`
+  - [Sentieon Minimap2](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#minimap2-binary): `202308.03` 
+  - [Sentieon util sort](https://support.sentieon.com/manual/usages/general/?highlight=minimap2#util-binary): `202308.03`
+  - [Sentieon LongReadSV](https://support.sentieon.com/manual/): `202308.03`
   - [LongReadSum](https://github.com/WGLab/LongReadSum#readme): `1.2.0`
   - [Sniffles](https://github.com/fritzsedlazeck/Sniffles#readme): `2.0.7`
   - [CuteSV](https://github.com/tjiangHIT/cuteSV#readme): `2.0.3`
@@ -90,6 +90,7 @@ inputs:
       \ header."}
   sentieon_license: {type: 'string?', doc: "License server host and port for Sentieon\
       \ tools.", default: "10.5.64.221:8990"}
+  sentieon_dnascope_model: { type: 'File', doc: "Sentieon DNAscoep model bundle." }
   minimap2_preset:
     type:
     - name: minimap2_preset
@@ -284,21 +285,15 @@ steps:
           $(self[0] == null ? self[1][0] : self[0])
       cpu: minimap2_cpu
     out: [outfile]
-  download_model:
-    run: ../tools/download_DNAscope_model.cwl
-    in:
-      model_name:
-        valueFrom: "Oxford_Nanopore-WGS"
-    out: [model_bundle]
   dnascope:
     run: ../tools/sentieon_DNAscope_LongRead_CLI.cwl
     in:
       sentieon_license: sentieon_license
       reference: indexed_reference_fasta
-      input_bam: 
+      input_bam:
         source: [clt_pickvalue/outfile]
         linkMerge: merge_flattened
-      model_bundle: download_model/model_bundle
+      model_bundle: sentieon_dnascope_model
       tech:
         valueFrom: "ONT"
       output_vcf:

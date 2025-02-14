@@ -84,6 +84,7 @@ inputs:
       \ this value will override the SM value provided in the input_unaligned_bam."}
   sentieon_license: {type: 'string?', doc: "License server host and port for Sentieon\
       \ tools.", default: "10.5.64.221:8990"}
+  sentieon_dnascope_model: { type: 'File', doc: "Sentieon DNAscoep model bundle." }
   minimap2_preset:
     type:
     - name: minimap2_preset
@@ -226,12 +227,6 @@ steps:
         valueFrom: $(self).longreadsum.tar.gz
       input_dir: longreadsum/outputs
     out: [output]
-  download_model:
-    run: ../tools/download_DNAscope_model.cwl
-    in:
-      model_name:
-        valueFrom: "PacBio_HiFi-WGS"
-    out: [model_bundle]
   dnascope:
     run: ../tools/sentieon_DNAscope_LongRead_CLI.cwl
     in:
@@ -240,7 +235,7 @@ steps:
       input_bam: 
         source: [clt_pickvalue/outfile]
         linkMerge: merge_flattened
-      model_bundle: download_model/model_bundle
+      model_bundle: sentieon_dnascope_model
       tech:
         valueFrom: "HiFi"
       output_vcf:
