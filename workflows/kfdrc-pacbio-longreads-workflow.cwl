@@ -245,7 +245,10 @@ steps:
         default: true
       skip-small-variants:
         source: minimap2_preset
-        valueFrom: $(self == "map-pb")
+        valueFrom: $(self != "map-hifi")
+      skip-svs:
+        source: minimap2_preset
+        valueFrom: $(self != "map-hifi")
       cpu_per_job: dnascope_cpu
       mem_per_job: dnascope_ram
     out: [small_variants, structural_variants]
