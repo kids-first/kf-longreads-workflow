@@ -80,7 +80,7 @@ inputs:
       prefix: -m
   tech:
     type: string?
-    doc: "{HiFi,ONT}     Sequencing technology used to generate the reads. (default: 'HiFi')"
+    doc: "{HiFi,ONT} Sequencing technology used to generate the reads. (default: 'HiFi')"
     inputBinding:
       position: 7
       prefix: --tech
