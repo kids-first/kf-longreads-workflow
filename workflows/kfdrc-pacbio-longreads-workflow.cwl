@@ -84,7 +84,7 @@ inputs:
       \ this value will override the SM value provided in the input_unaligned_bam."}
   sentieon_license: {type: 'string?', doc: "License server host and port for Sentieon\
       \ tools.", default: "10.5.64.221:8990"}
-  sentieon_dnascope_model: { type: 'File', doc: "Sentieon DNAscoep model bundle." }
+  sentieon_dnascope_model: { type: 'File', doc: "Sentieon DNAscope model bundle." }
   minimap2_preset:
     type:
     - name: minimap2_preset
