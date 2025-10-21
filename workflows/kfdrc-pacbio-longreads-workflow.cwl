@@ -79,7 +79,7 @@ inputs:
   biospecimen_name: {type: 'string?', doc: "String name of the biospecimen. Providing this value will override the SM value provided
       in the input_unaligned_bam."}
   sentieon_license: {type: 'string?', doc: "License server host and port for Sentieon tools.", default: "10.5.64.221:8990"}
-  sentieon_dnascope_model: {type: 'File', doc: "Sentieon DNAscope model bundle.", "sbg:suggestedValue": {class: File, path: 671912d664b9972c21a291fe,
+  sentieon_dnascope_model: {type: 'File', doc: "Sentieon DNAscope model bundle.", "sbg:suggestedValue": {class: File, path: 684987b02b97f154cfc69c45,
       name: DNAscopePacBio2.1.bundle}, "sbg:fileTypes": "BUNDLE"}
   minimap2_preset:
     type:
