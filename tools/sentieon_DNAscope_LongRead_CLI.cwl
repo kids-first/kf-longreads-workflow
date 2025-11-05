@@ -14,7 +14,7 @@ requirements:
   coresMin: $(inputs.cpu_per_job)
   ramMin: $(inputs.mem_per_job * 1000)
 - class: DockerRequirement
-  dockerPull: pgc-images.sbgenomics.com/hdchen/sentieon:202308.03
+  dockerPull: pgc-images.sbgenomics.com/hdchen/sentieon:202503.01
 - class: EnvVarRequirement
   envDef:
   - envName: SENTIEON_LICENSE
